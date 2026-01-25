@@ -1,0 +1,9 @@
+version: '1.0'
+services:
+  auto-login:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - /Users/moenl/Projects/auto-login:/run
+      - /run/node_modules
