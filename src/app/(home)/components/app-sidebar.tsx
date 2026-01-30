@@ -30,7 +30,7 @@ const data = {
         },
         {
           title: 'Project Structure',
-          url: '/test'
+          url: '/site'
         }
       ]
     },
