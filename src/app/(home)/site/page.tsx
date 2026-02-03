@@ -14,36 +14,31 @@ import { Input } from '@/src/components/ui/input'
 import { Textarea } from '@/src/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { useForm, SubmitHandler, FieldValues, Controller } from 'react-hook-form'
-import { useEffect, useRef } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { addSiteDto } from '@/src/dto/site'
+import { useEffect } from 'react'
+import { useWatch } from 'react-hook-form'
 
 export default function Test() {
-  const {
-    control,
-    handleSubmit,
-    trigger,
-    watch,
-    formState: { errors }
-  } = useForm({ mode: 'onChange' })
+  const { control, handleSubmit, trigger } = useForm({
+    resolver: zodResolver(addSiteDto)
+  })
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    console.log(data, errors)
+    console.log(data)
+    fetch('/api/site', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
   }
 
-  const handleValidate = (_: unknown, formValues: FieldValues) => {
-    const { storage, cookie } = formValues
-    return storage || cookie ? true : 'You must agree to the terms and conditions'
-  }
+  const storage = useWatch({ control, name: 'storage' })
+  const cookie = useWatch({ control, name: 'cookie' })
 
-  const watchFields = watch(['storage', 'cookie'], { storage: '', cookie: '' })
-  const isFirst = useRef(true)
   useEffect(() => {
-    if (isFirst.current) {
-      isFirst.current = false
-      return
-    }
+    if (!storage && !cookie) return
 
     trigger(['storage', 'cookie'])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...watchFields, trigger])
+  }, [storage, cookie, trigger])
 
   return (
     <div className="p-4 bg-secondary h-full flex justify-center items-center">
@@ -55,12 +50,11 @@ export default function Test() {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
-              <FieldSet>
+              <FieldSet className="min-w-0">
                 <Controller
                   name="url"
                   control={control}
                   defaultValue=""
-                  rules={{ required: 'Card number is required' }}
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Card Number</FieldLabel>
@@ -80,7 +74,6 @@ export default function Test() {
                   name="storage"
                   control={control}
                   defaultValue=""
-                  rules={{ validate: handleValidate }}
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
@@ -100,7 +93,6 @@ export default function Test() {
                   name="cookie"
                   control={control}
                   defaultValue=""
-                  rules={{ validate: handleValidate }}
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Comments</FieldLabel>

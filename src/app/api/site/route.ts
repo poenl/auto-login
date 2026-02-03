@@ -1,7 +1,13 @@
 import { NextRequest } from 'next/server'
+import { addSiteDto } from '@/src/dto/site'
+import { config } from '@/src/lib/conf'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
-  const res = await request.json()
-  console.log('🚀 ~ POST ~ res:', res)
-  return new Response('Hello, Next.js!')
+  const body = addSiteDto.safeParse(await request.json())
+  if (!body.success) {
+    return new Response(JSON.stringify(body.error), { status: 400 })
+  }
+  config.appendToArray('sites', { ...body.data, id: uuidv4() })
+  return Response.json({ message: '添加成功' })
 }

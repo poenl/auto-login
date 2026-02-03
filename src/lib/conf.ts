@@ -6,6 +6,12 @@ interface Config {
     name: string
     password: string
   }
+  sites: {
+    id: string
+    url: string
+    storage?: string
+    cookie?: string
+  }[]
 }
 
 export const config = new Conf<Config>({ fileExtension: 'json', cwd: process.cwd() })

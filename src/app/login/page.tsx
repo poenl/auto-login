@@ -16,13 +16,13 @@ import { useForm, Controller, SubmitHandler, FieldValues } from 'react-hook-form
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { signupFormSchema } from '@/src/lib/definitions'
+import { signupDto } from '@/src/dto/auth'
 
 export default function LoginPage() {
   const router = useRouter()
 
   const { control, handleSubmit } = useForm({
-    resolver: zodResolver(signupFormSchema),
+    resolver: zodResolver(signupDto),
     defaultValues: {
       name: '',
       password: ''
@@ -72,7 +72,7 @@ export default function LoginPage() {
                           aria-invalid={fieldState.invalid}
                           {...field}
                         />
-                        {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
+                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
                   />
@@ -96,7 +96,7 @@ export default function LoginPage() {
                           aria-invalid={fieldState.invalid}
                           {...field}
                         />
-                        {fieldState.error && <FieldError>{fieldState.error.message}</FieldError>}
+                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
                       </Field>
                     )}
                   />

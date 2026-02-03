@@ -2,10 +2,10 @@ import { NextRequest } from 'next/server'
 import argon2 from 'argon2'
 import { createSession } from '@/src/lib/session'
 import { config } from '@/src/lib/conf'
-import { signupFormSchema } from '@/src/lib/definitions'
+import { signupDto } from '@/src/dto/auth'
 
 export async function POST(req: NextRequest) {
-  const body = signupFormSchema.safeParse(await req.json())
+  const body = signupDto.safeParse(await req.json())
   if (!body.success) {
     return Response.json({ message: body.error.message }, { status: 400 })
   }
