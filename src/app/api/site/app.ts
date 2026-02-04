@@ -3,6 +3,7 @@ import puppeteer from 'puppeteer'
 // import { config } from '../../../lib/conf'
 import Conf from 'conf'
 import argon2 from 'argon2'
+import type { CookieData } from 'puppeteer-core'
 
 interface Config {
   user?: {
@@ -30,6 +31,30 @@ export const createAdmin = async () => {
   config.set('user', user)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeCookies(cookies: any[]): CookieData[] {
+  return cookies
+    .filter((c) => c?.name && c?.value)
+    .map((c) => {
+      let sameSite: CookieData['sameSite']
+
+      if (c.sameSite === 'strict') sameSite = 'Strict'
+      else if (c.sameSite === 'none') sameSite = 'None'
+      else if (c.sameSite === 'lax') sameSite = 'Lax'
+
+      return {
+        name: String(c.name),
+        value: String(c.value),
+        domain: c.domain,
+        path: c.path ?? '/',
+        secure: !!c.secure,
+        httpOnly: !!c.httpOnly,
+        ...(sameSite ? { sameSite } : {}),
+        ...(typeof c.expires === 'number' ? { expires: Math.floor(c.expires / 1000) } : {})
+      }
+    })
+}
+
 const start = async () => {
   const browser = await puppeteer.launch({
     headless: false,
@@ -44,7 +69,7 @@ const start = async () => {
       .map((site) => {
         if (!site.cookie) return
 
-        return browser.setCookie(JSON.parse(site.cookie))
+        return browser.setCookie(...normalizeCookies(JSON.parse(site.cookie)))
       })
       .filter((item) => item)
   )

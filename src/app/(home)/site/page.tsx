@@ -18,17 +18,19 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { addSiteDto } from '@/src/dto/site'
 import { useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
+import { toast } from 'sonner'
 
 export default function Test() {
   const { control, handleSubmit, trigger } = useForm({
     resolver: zodResolver(addSiteDto)
   })
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    console.log(data)
-    fetch('/api/site', {
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+    const res = await fetch('/api/site', {
       method: 'POST',
       body: JSON.stringify(data)
     })
+    if (!res.ok) toast.error((await res.json()).message)
+    else toast.success('添加成功')
   }
 
   const storage = useWatch({ control, name: 'storage' })
@@ -39,6 +41,16 @@ export default function Test() {
 
     trigger(['storage', 'cookie'])
   }, [storage, cookie, trigger])
+
+  // 复制脚本
+  const storageScript = async () => {
+    await navigator.clipboard.writeText('JSON.stringify(localStorage)')
+    toast.success('复制成功')
+  }
+  const cookieScript = async () => {
+    await navigator.clipboard.writeText('JSON.stringify(await cookieStore.getAll())')
+    toast.success('复制成功')
+  }
 
   return (
     <div className="p-4 bg-secondary h-full flex justify-center items-center">
@@ -77,6 +89,13 @@ export default function Test() {
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
+                      <FieldDescription>
+                        12
+                        <Button size="sm" variant="outline" type="button" onClick={storageScript}>
+                          复制
+                        </Button>
+                      </FieldDescription>
+
                       <Textarea
                         id={field.name}
                         placeholder="Add any additional comments"
@@ -96,6 +115,12 @@ export default function Test() {
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
+                      <FieldDescription>
+                        12
+                        <Button size="sm" variant="outline" type="button" onClick={cookieScript}>
+                          复制
+                        </Button>
+                      </FieldDescription>
                       <Textarea
                         id={field.name}
                         placeholder="Add any additional comments"
