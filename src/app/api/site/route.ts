@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server'
 import { addSiteDto } from '@/src/dto/site'
-import { config } from '@/src/lib/conf'
-import { v4 as uuidv4 } from 'uuid'
 import { openPage } from './app'
+import db from '@/src/lib/db'
+import { sitesTable, SiteState } from '@/src/db/schema'
+import { getQueryParams } from '@/src/lib/utils'
+import { getSites } from '@/src/services/site.service'
 
 export async function POST(request: NextRequest) {
   const body = addSiteDto.safeParse(await request.json())
@@ -10,20 +12,20 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify(body.error), { status: 400 })
   }
 
-  const sites = config.get('sites')
-  if (sites.some((site) => site.url === body.data.url)) {
-    return new Response(JSON.stringify({ message: '站点已存在' }), { status: 400 })
-  }
+  const [site] = await db
+    .insert(sitesTable)
+    .values({ ...body.data, state: SiteState.Initializing })
+    .returning()
 
-  const newSite = { ...body.data, id: uuidv4() }
-  config.appendToArray('sites', newSite)
+  await openPage(site)
 
-  openPage(newSite)
-
-  return Response.json({ message: '添加成功' })
+  return Response.json({ message: '添加成功', data: site })
 }
 
-export async function GET() {
-  const sites = config.get('sites')
-  return Response.json({ data: sites })
+export async function GET(request: NextRequest) {
+  const { pagenum = 1, pagesize = 10 } = getQueryParams<{ pagenum: number; pagesize: number }>(
+    request
+  )
+  const sites = await getSites(pagenum, pagesize)
+  return Response.json(sites)
 }

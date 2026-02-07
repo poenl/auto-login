@@ -1,13 +1,19 @@
-import { config } from '@/src/lib/conf'
+import db from '@/src/lib/db'
+import { sitesTable } from '@/src/db/schema'
+import { eq } from 'drizzle-orm'
 
-export async function DELETE(_: unknown, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_: unknown, { params }: { params: Promise<{ id: number }> }) {
   const { id } = await params
+  const [site] = await db.delete(sitesTable).where(eq(sitesTable.id, id)).returning()
+  return Response.json({ message: '删除成功', date: site })
+}
 
-  const siteIndex = config.get('sites').findIndex((site) => site.id === id)
-  if (siteIndex === -1) {
-    return Response.json({ message: '未找到该站点' }, { status: 400 })
+export async function GET(_: unknown, { params }: { params: Promise<{ id: number }> }) {
+  const { id } = await params
+  const [site] = await db.select().from(sitesTable).where(eq(sitesTable.id, id))
+  const result = {
+    ...site,
+    screenshot: `data:image/png;base64,${site.screenshot!.toString('base64')}`
   }
-  const newSites = config.get('sites').toSpliced(siteIndex, 1)
-  config.set('sites', newSites)
-  return Response.json({ message: '删除成功', date: newSites })
+  return Response.json(result)
 }

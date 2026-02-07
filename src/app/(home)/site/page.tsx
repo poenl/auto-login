@@ -19,8 +19,11 @@ import { addSiteDto } from '@/src/dto/site'
 import { useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export default function Test() {
+  const router = useRouter()
+
   const { control, handleSubmit, trigger } = useForm({
     resolver: zodResolver(addSiteDto)
   })
@@ -30,7 +33,10 @@ export default function Test() {
       body: JSON.stringify(data)
     })
     if (!res.ok) toast.error((await res.json()).message)
-    else toast.success('添加成功')
+    else {
+      toast.success('添加成功')
+      router.push('/')
+    }
   }
 
   const storage = useWatch({ control, name: 'storage' })

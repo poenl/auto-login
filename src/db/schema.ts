@@ -1,8 +1,37 @@
-import { int, text, sqliteTable } from 'drizzle-orm/sqlite-core'
+import { InferSelectModel } from 'drizzle-orm'
+import { int, text, sqliteTable, blob } from 'drizzle-orm/sqlite-core'
+
+export enum SiteState {
+  // 初始化
+  Initializing = 'initializing',
+  // 成功
+  Success = 'success',
+  // 失败
+  Failed = 'failed',
+  // 正在运行
+  Running = 'running',
+  // 检查中
+  Checking = 'checking'
+  // // 停止
+  // Stopped = 'stopped',
+  // // 暂停
+  // Paused = 'paused',
+  // // 暂停中
+  // Pausing = 'pausing',
+  // // 恢复中
+  // Resuming = 'resuming',
+  // // 重启中
+  // Restarting = 'restarting'
+  // // 重置中
+}
 
 export const sitesTable = sqliteTable('sites', {
   id: int().primaryKey({ autoIncrement: true }),
-  url: text(),
+  url: text().unique().notNull(),
   storage: text(),
-  cookie: text()
+  cookie: text(),
+  state: text().notNull().$type<SiteState>(),
+  screenshot: blob({ mode: 'buffer' })
 })
+
+export type Site = InferSelectModel<typeof sitesTable>
