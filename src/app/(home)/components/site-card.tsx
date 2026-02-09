@@ -14,9 +14,10 @@ import { Badge } from '@/src/components/ui/badge'
 import { Spinner } from '@/src/components/ui/spinner'
 import { Site } from '@/src/services/site.service'
 import Image from 'next/image'
-import { BadgeCheck } from 'lucide-react'
+import { BadgeCheck, RotateCcw, CircleX } from 'lucide-react'
 import { SiteState } from '@/src/db/schema'
 import useSWR from 'swr'
+import { date } from '@/src/lib/dayjs'
 
 // 状态中文
 const stateMap: Record<SiteState, string> = {
@@ -27,48 +28,87 @@ const stateMap: Record<SiteState, string> = {
   failed: '失败'
 }
 
-export function SiteCard(
-  param: Pick<Site, 'state' | 'url' | 'screenshot' | 'id'> & { deleteSite: (id: number) => void }
-) {
-  const isPending = (state: SiteState) =>
-    state === SiteState.Running || state === SiteState.Checking || state === SiteState.Initializing
+const stateIconMap: Record<SiteState, React.ReactNode> = {
+  initializing: <Spinner />,
+  running: <Spinner />,
+  checking: <Spinner />,
+  success: <BadgeCheck />,
+  failed: <CircleX />
+}
 
-  const { data } = useSWR(
-    isPending(param.state) ? `/api/site/${param.id}` : null,
+const stateStyleMap: Record<SiteState, string> = {
+  initializing: 'text-gray-500',
+  running: '',
+  checking: 'text-yellow-500',
+  success: 'text-green-500',
+  failed: 'text-red-500'
+}
+
+export function SiteCard({
+  deleteSite,
+  ...param
+}: Site & {
+  deleteSite: (id: number) => void
+}) {
+  const getIsPending = (state: SiteState | undefined) => {
+    return (
+      state === SiteState.Running ||
+      state === SiteState.Checking ||
+      state === SiteState.Initializing
+    )
+  }
+
+  const { data, mutate } = useSWR(
+    `/api/site/${param.id}`,
     async (url) => fetch(url).then<Site>((res) => res.json()),
     {
-      refreshInterval: (data) => {
-        if (!data) return 0
-        return isPending(data.state) ? 1000 : 0
+      fallbackData: param,
+      refreshInterval(data) {
+        return getIsPending(data?.state) ? 1000 : 0
       }
     }
   )
 
-  const site = data || param
+  const isPending = getIsPending(data?.state)
+
+  const handleRefresh = async () => {
+    await fetch(`/api/site/refresh/${param.id}`)
+    await mutate()
+  }
 
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{site.url}</CardTitle>
-        <CardDescription>Enter your email below to login to your account</CardDescription>
+        <CardTitle className="text-xl">{data.name}</CardTitle>
+        <CardDescription>{data.url}</CardDescription>
         <CardAction>
-          <Badge variant="secondary" className="">
-            {isPending(site.state) ? (
-              <Spinner data-icon="inline-start" />
-            ) : (
-              <BadgeCheck data-icon="inline-start" />
-            )}
-            {stateMap[site.state]}
+          <Badge variant="secondary" className={stateStyleMap[data.state]}>
+            {stateIconMap[data.state]}
+            {stateMap[data.state]}
           </Badge>
         </CardAction>
       </CardHeader>
       <CardContent>
-        <Image src={site.screenshot} width={300} height={300} alt="" />
+        <div className="w-full aspect-4/3 relative">
+          <Image src={data.screenshot} alt="" fill className="object-cover " />
+        </div>
       </CardContent>
       <CardFooter className="gap-2">
-        <Button variant="default">Login</Button>
-        <Button variant="destructive" onClick={() => param.deleteSite(param.id)}>
+        <Button variant="default" size="sm">
+          Login
+        </Button>
+        <Button variant="destructive" size="sm" onClick={() => deleteSite(param.id)}>
           删除
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-auto"
+          disabled={isPending}
+          onClick={handleRefresh}
+        >
+          {date(data.updatedAt).fromNow(true)}
+          {isPending ? <Spinner /> : <RotateCcw />}
         </Button>
       </CardFooter>
     </Card>

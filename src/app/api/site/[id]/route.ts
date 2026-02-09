@@ -1,6 +1,7 @@
 import db from '@/src/lib/db'
 import { sitesTable } from '@/src/db/schema'
 import { eq } from 'drizzle-orm'
+import { getSite } from '@/src/services/site.service'
 
 export async function DELETE(_: unknown, { params }: { params: Promise<{ id: number }> }) {
   const { id } = await params
@@ -10,7 +11,7 @@ export async function DELETE(_: unknown, { params }: { params: Promise<{ id: num
 
 export async function GET(_: unknown, { params }: { params: Promise<{ id: number }> }) {
   const { id } = await params
-  const [site] = await db.select().from(sitesTable).where(eq(sitesTable.id, id))
+  const site = await getSite(id)
   const result = {
     ...site,
     screenshot: `data:image/png;base64,${site.screenshot!.toString('base64')}`

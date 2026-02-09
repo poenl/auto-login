@@ -1,8 +1,7 @@
 import puppeteer, { CookieData } from 'puppeteer'
 import { sitesTable } from '@/src/db/schema'
 import { SiteState } from '@/src/db/schema'
-import db from '@/src/lib/db'
-import { eq } from 'drizzle-orm'
+import { updateSite } from '../services/site.service'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeCookies(cookies: any[]): CookieData[] {
@@ -28,22 +27,19 @@ function normalizeCookies(cookies: any[]): CookieData[] {
     })
 }
 
-// 更新状态和截图
-const updateSite = (id: number, state: SiteState, screenshot: Buffer) => {
-  return db.update(sitesTable).set({ state, screenshot }).where(eq(sitesTable.id, id))
-}
-
 export const openPage = async (site: typeof sitesTable.$inferSelect) => {
   const browser = await puppeteer.launch({
     headless: false,
-    userDataDir: './user_data',
-    args: ['--disk-cache-dir=./cache']
+    userDataDir: './user_data'
   })
 
   const page = await browser.newPage()
 
   const runningScreenShot = await page.screenshot()
-  await updateSite(site.id, SiteState.Running, Buffer.from(runningScreenShot))
+  await updateSite(site.id, {
+    state: SiteState.Running,
+    screenshot: Buffer.from(runningScreenShot)
+  })
 
   // 异步执行
   const asyncFn = async () => {
@@ -63,24 +59,61 @@ export const openPage = async (site: typeof sitesTable.$inferSelect) => {
       await browser.setCookie(...cookies)
     }
 
-    await page.goto(site.url)
-
-    await page.waitForNetworkIdle()
+    await page.goto(site.url, { waitUntil: 'networkidle2' })
 
     const screenshot = await page.screenshot()
-    await updateSite(site.id, SiteState.Checking, Buffer.from(screenshot))
+    await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
     try {
       // 发生跳转，可能登录失败
-      await page.waitForNavigation()
-      await updateSite(site.id, SiteState.Failed, Buffer.from(screenshot))
+      await page.waitForNavigation({ timeout: 5000 })
+      const failedScreenshot = await page.screenshot()
+      await updateSite(site.id, {
+        state: SiteState.Failed,
+        screenshot: Buffer.from(failedScreenshot)
+      })
     } catch {}
 
-    await updateSite(site.id, SiteState.Success, Buffer.from(screenshot))
+    await updateSite(site.id, { state: SiteState.Success })
 
-    await page.close()
+    const pages = await browser.pages()
+    await Promise.all(pages.map((p) => p.close()))
     await browser.close()
   }
-  asyncFn()
+
+  try {
+    asyncFn()
+  } catch {
+    updateSite(site.id, { state: SiteState.Failed })
+  }
 
   return
+}
+
+export const refreshPage = async (site: typeof sitesTable.$inferSelect) => {
+  const browser = await puppeteer.launch({
+    headless: false,
+    userDataDir: './user_data'
+  })
+
+  const page = await browser.newPage()
+
+  await page.goto(site.url, { waitUntil: 'networkidle2' })
+
+  const screenshot = await page.screenshot()
+  await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
+
+  try {
+    await page.waitForNavigation({ timeout: 5000 })
+    const failedScreenshot = await page.screenshot()
+    await updateSite(site.id, {
+      state: SiteState.Failed,
+      screenshot: Buffer.from(failedScreenshot)
+    })
+  } catch {}
+
+  await updateSite(site.id, { state: SiteState.Success })
+
+  const pages = await browser.pages()
+  await Promise.all(pages.map((p) => p.close()))
+  await browser.close()
 }

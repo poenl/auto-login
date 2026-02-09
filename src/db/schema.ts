@@ -27,11 +27,14 @@ export enum SiteState {
 
 export const sitesTable = sqliteTable('sites', {
   id: int().primaryKey({ autoIncrement: true }),
+  name: text().notNull(),
   url: text().unique().notNull(),
   storage: text(),
   cookie: text(),
   state: text().notNull().$type<SiteState>(),
-  screenshot: blob({ mode: 'buffer' })
+  screenshot: blob({ mode: 'buffer' }),
+  createdAt: int().notNull().default(Date.now()),
+  updatedAt: int().notNull().default(Date.now())
 })
 
 export type Site = InferSelectModel<typeof sitesTable>

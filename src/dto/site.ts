@@ -2,6 +2,7 @@ import * as z from 'zod'
 
 export const addSiteDto = z
   .object({
+    name: z.string().nonempty('请输入站点名称'),
     url: z.url('请输入合法的 URL'),
     storage: z.string().optional(),
     cookie: z.string().optional()

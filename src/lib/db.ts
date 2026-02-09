@@ -1,5 +1,5 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3'
+import { drizzle } from 'drizzle-orm/libsql'
 
-const db = drizzle('./tmp/test.db')
+const db = drizzle('file:config/config.db')
 
 export default db
