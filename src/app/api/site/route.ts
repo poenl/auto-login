@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { addSiteDto } from '@/src/dto/site'
+import { addSiteDto } from '@/src/dto/site.dto'
 import { openPage } from '../../../lib/puppeteer'
 import db from '@/src/lib/db'
 import { sitesTable, SiteState } from '@/src/db/schema'

@@ -15,17 +15,19 @@ import { Textarea } from '@/src/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { useForm, SubmitHandler, FieldValues, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { addSiteDto } from '@/src/dto/site'
+import { addSiteDto } from '@/src/dto/site.dto'
 import { useEffect, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/src/components/ui/spinner'
+import cronstrue from 'cronstrue'
+import 'cronstrue/locales/zh_CN'
 
 export default function Test() {
   const router = useRouter()
 
-  const { control, handleSubmit, trigger } = useForm({
+  const { control, handleSubmit, trigger, setValue } = useForm({
     resolver: zodResolver(addSiteDto)
   })
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
@@ -51,19 +53,18 @@ export default function Test() {
     trigger(['storage', 'cookie'])
   }, [storage, cookie, trigger])
 
-  // 复制脚本
-  const storageScript = async () => {
-    await navigator.clipboard.writeText('JSON.stringify(localStorage)')
-    toast.success('复制成功')
-  }
-  const cookieScript = async () => {
-    await navigator.clipboard.writeText('JSON.stringify(await cookieStore.getAll())')
-    toast.success('复制成功')
-  }
-
   // 提交中
   const [loading, setLoading] = useState(false)
 
+  // cron表达式描述
+  const getCronDescription = (cron: string | undefined) => {
+    try {
+      if (!cron) return ''
+      return cronstrue.toString(cron, { locale: 'zh_CN', use24HourTimeFormat: true })
+    } catch {
+      return ''
+    }
+  }
   return (
     <div className="p-4 bg-secondary h-full flex justify-center items-center">
       <Card className="max-w-200 flex-1">
@@ -75,6 +76,7 @@ export default function Test() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <FieldSet className="min-w-0">
+                {/* 名称 */}
                 <Controller
                   name="name"
                   control={control}
@@ -93,7 +95,7 @@ export default function Test() {
                     </Field>
                   )}
                 />
-
+                {/* 网址 */}
                 <Controller
                   name="url"
                   control={control}
@@ -112,7 +114,7 @@ export default function Test() {
                     </Field>
                   )}
                 />
-
+                {/* cookie */}
                 <Controller
                   name="cookie"
                   control={control}
@@ -120,12 +122,7 @@ export default function Test() {
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
-                      <FieldDescription>
-                        12
-                        <Button size="sm" variant="outline" type="button" onClick={cookieScript}>
-                          复制
-                        </Button>
-                      </FieldDescription>
+                      <FieldDescription>12</FieldDescription>
                       <Textarea
                         id={field.name}
                         placeholder="Add any additional comments"
@@ -137,7 +134,7 @@ export default function Test() {
                     </Field>
                   )}
                 />
-
+                {/* 存储 */}
                 <Controller
                   name="storage"
                   control={control}
@@ -145,13 +142,7 @@ export default function Test() {
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
-                      <FieldDescription>
-                        12
-                        <Button size="sm" variant="outline" type="button" onClick={storageScript}>
-                          复制
-                        </Button>
-                      </FieldDescription>
-
+                      <FieldDescription>12</FieldDescription>
                       <Textarea
                         id={field.name}
                         placeholder="Add any additional comments"
@@ -163,6 +154,53 @@ export default function Test() {
                     </Field>
                   )}
                 />
+                {/* cron */}
+                <FieldGroup className="flex flex-row">
+                  <Controller
+                    name="interval"
+                    control={control}
+                    defaultValue=""
+                    render={({ field, fieldState }) => (
+                      <Field>
+                        <FieldLabel htmlFor={field.name}>自动登录周期</FieldLabel>
+                        <FieldDescription className="space-x-4">
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => setValue('interval', '0 0 * * *')}
+                          >
+                            每天
+                          </Button>
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => setValue('interval', '0 0 * * 1')}
+                          >
+                            每周
+                          </Button>
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => setValue('interval', '0 0 1 * *')}
+                          >
+                            每月
+                          </Button>
+                        </FieldDescription>
+                        <Input
+                          id={field.name}
+                          placeholder="输入Cron表达式"
+                          aria-invalid={fieldState.invalid}
+                          {...field}
+                        />
+                        {fieldState.invalid ? (
+                          <FieldError errors={[fieldState.error]} />
+                        ) : (
+                          <FieldDescription>{getCronDescription(field.value)}</FieldDescription>
+                        )}
+                      </Field>
+                    )}
+                  />
+                </FieldGroup>
               </FieldSet>
 
               <FieldSeparator />

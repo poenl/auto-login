@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 
 import { SearchForm } from '@/src/app/(home)/components/search-form'
@@ -15,6 +17,8 @@ import {
   SidebarRail
 } from '@/src/components/ui/sidebar'
 import Link from 'next/link'
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 // This is sample data.
 const data = {
@@ -40,28 +44,7 @@ const data = {
       items: [
         {
           title: 'Routing',
-          url: '#'
-        },
-        {
-          title: 'Data Fetching',
-          url: '#',
-          isActive: true
-        },
-        {
-          title: 'Rendering',
-          url: '#'
-        },
-        {
-          title: 'Caching',
-          url: '#'
-        },
-        {
-          title: 'Styling',
-          url: '#'
-        },
-        {
-          title: 'Optimizing',
-          url: '#'
+          url: '/settings'
         }
       ]
     }
@@ -69,6 +52,12 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // 当前激活菜单项
+  const [activeItem, setActiveItem] = useState(usePathname())
+
+  const handleMenuClick = (item: string) => {
+    setActiveItem(item)
+  }
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -76,15 +65,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SearchForm />
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
+                  <SidebarMenuItem key={item.title} onClick={() => handleMenuClick(item.url)}>
+                    <SidebarMenuButton asChild isActive={activeItem === item.url}>
                       <Link href={item.url}>{item.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

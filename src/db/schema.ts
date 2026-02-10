@@ -33,6 +33,7 @@ export const sitesTable = sqliteTable('sites', {
   cookie: text(),
   state: text().notNull().$type<SiteState>(),
   screenshot: blob({ mode: 'buffer' }),
+  interval: text().notNull(),
   createdAt: int().notNull().default(Date.now()),
   updatedAt: int().notNull().default(Date.now())
 })

@@ -44,6 +44,9 @@ importers:
       conf:
         specifier: ^15.0.2
         version: 15.0.2
+      cronstrue:
+        specifier: ^3.12.0
+        version: 3.12.0
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19
@@ -2206,6 +2209,10 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  cronstrue@3.12.0:
+    resolution: {integrity: sha512-k9oiM4G7U1GEEktOGfZabldP0gtFWTsaRVqq9X06ifytr73mpSYYdt+zGZBeS5lRCsqMfq0y7oSHycWGIJSo6g==, tarball: https://registry.npmmirror.com/cronstrue/-/cronstrue-3.12.0.tgz}
+    hasBin: true
 
   cross-env@10.1.0:
     resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==, tarball: https://registry.npmmirror.com/cross-env/-/cross-env-10.1.0.tgz}
@@ -5947,6 +5954,8 @@ snapshots:
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.9.3
+
+  cronstrue@3.12.0: {}
 
   cross-env@10.1.0:
     dependencies:

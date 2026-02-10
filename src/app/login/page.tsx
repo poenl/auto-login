@@ -16,7 +16,7 @@ import { useForm, Controller, SubmitHandler, FieldValues } from 'react-hook-form
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { signupDto } from '@/src/dto/auth'
+import { signupDto } from '@/src/dto/auth.dto'
 
 export default function LoginPage() {
   const router = useRouter()

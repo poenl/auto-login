@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import argon2 from 'argon2'
 import { createSession } from '@/src/lib/session'
 import { config } from '@/src/lib/conf'
-import { signupDto } from '@/src/dto/auth'
+import { signupDto } from '@/src/dto/auth.dto'
 
 export async function POST(req: NextRequest) {
   const body = signupDto.safeParse(await req.json())
