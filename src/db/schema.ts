@@ -11,7 +11,7 @@ export enum SiteState {
   // 正在运行
   Running = 'running',
   // 检查中
-  Checking = 'checking'
+  Checking = 'checking',
   // // 停止
   // Stopped = 'stopped',
   // // 暂停
@@ -23,6 +23,8 @@ export enum SiteState {
   // // 重启中
   // Restarting = 'restarting'
   // // 重置中
+  // 超时
+  Timeout = 'timeout'
 }
 
 export const sitesTable = sqliteTable('sites', {
@@ -38,4 +40,4 @@ export const sitesTable = sqliteTable('sites', {
   updatedAt: int().notNull().default(Date.now())
 })
 
-export type Site = InferSelectModel<typeof sitesTable>
+export type SiteSchema = InferSelectModel<typeof sitesTable>

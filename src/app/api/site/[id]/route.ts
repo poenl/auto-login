@@ -12,9 +12,6 @@ export async function DELETE(_: unknown, { params }: { params: Promise<{ id: num
 export async function GET(_: unknown, { params }: { params: Promise<{ id: number }> }) {
   const { id } = await params
   const site = await getSite(id)
-  const result = {
-    ...site,
-    screenshot: `data:image/png;base64,${site.screenshot!.toString('base64')}`
-  }
-  return Response.json(result)
+
+  return Response.json(site)
 }

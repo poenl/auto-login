@@ -2,12 +2,12 @@
 
 import { SiteCard } from './components/site-card'
 import useSWR from 'swr'
-import { Site } from '@/src/services/site.service'
+import { GetSites } from '@/src/services/site.service'
 import { toast } from 'sonner'
 
 export default function Home() {
   const { data, mutate } = useSWR('/api/site', (url) =>
-    fetch(url).then<Site[]>((res) => res.json())
+    fetch(url).then<GetSites>((res) => res.json())
   )
   const sites = data || []
 

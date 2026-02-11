@@ -1,7 +1,7 @@
-import puppeteer, { CookieData } from 'puppeteer'
+import puppeteer, { CookieData, Page } from 'puppeteer'
 import { sitesTable } from '@/src/db/schema'
 import { SiteState } from '@/src/db/schema'
-import { updateSite } from '../services/site.service'
+import { updateSite, GetSites } from '../services/site.service'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeCookies(cookies: any[]): CookieData[] {
@@ -27,6 +27,53 @@ function normalizeCookies(cookies: any[]): CookieData[] {
     })
 }
 
+const open = async (page: Page, site: { id: number; url: string }) => {
+  try {
+    await page.goto(site.url, { timeout: 10000 })
+
+    const abortSignal = new AbortController()
+    let isRedirect = false // 是否跳转
+
+    const openPage = async () => {
+      const timer = setTimeout(() => {
+        throw new Error('timeout')
+      }, 10000)
+      await page.waitForNetworkIdle({ concurrency: 2 })
+      clearTimeout(timer)
+
+      // 页面已经跳转,跳过检查
+      if (isRedirect) return
+      const screenshot = await page.screenshot()
+      await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
+
+      setTimeout(abortSignal.abort, 5000)
+    }
+
+    const waitFn = async () => {
+      try {
+        await page.waitForNavigation({ signal: abortSignal.signal, waitUntil: 'networkidle2' })
+        if (abortSignal.signal.aborted) throw new Error('aborted')
+        // 发生跳转，可能登录失败
+        isRedirect = true
+        const failedScreenshot = await page.screenshot()
+        await updateSite(site.id, {
+          state: SiteState.Failed,
+          screenshot: Buffer.from(failedScreenshot)
+        })
+      } catch {
+        await updateSite(site.id, { state: SiteState.Success })
+      }
+    }
+
+    await Promise.all([openPage(), waitFn()])
+  } catch {
+    // 页面打开超时
+    await updateSite(site.id, {
+      state: SiteState.Timeout
+    })
+  }
+}
+// 打开页面
 export const openPage = async (site: typeof sitesTable.$inferSelect) => {
   const browser = await puppeteer.launch({
     headless: false,
@@ -59,21 +106,7 @@ export const openPage = async (site: typeof sitesTable.$inferSelect) => {
       await browser.setCookie(...cookies)
     }
 
-    await page.goto(site.url, { waitUntil: 'networkidle2' })
-
-    const screenshot = await page.screenshot()
-    await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
-    try {
-      // 发生跳转，可能登录失败
-      await page.waitForNavigation({ timeout: 5000 })
-      const failedScreenshot = await page.screenshot()
-      await updateSite(site.id, {
-        state: SiteState.Failed,
-        screenshot: Buffer.from(failedScreenshot)
-      })
-    } catch {}
-
-    await updateSite(site.id, { state: SiteState.Success })
+    await open(page, site)
 
     const pages = await browser.pages()
     await Promise.all(pages.map((p) => p.close()))
@@ -88,8 +121,8 @@ export const openPage = async (site: typeof sitesTable.$inferSelect) => {
 
   return
 }
-
-export const refreshPage = async (site: typeof sitesTable.$inferSelect) => {
+// 刷新页面
+export const refreshPage = async (site: { id: number; url: string }) => {
   const browser = await puppeteer.launch({
     headless: false,
     userDataDir: './user_data'
@@ -97,21 +130,25 @@ export const refreshPage = async (site: typeof sitesTable.$inferSelect) => {
 
   const page = await browser.newPage()
 
-  await page.goto(site.url, { waitUntil: 'networkidle2' })
+  await open(page, site)
 
-  const screenshot = await page.screenshot()
-  await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
+  const pages = await browser.pages()
+  await Promise.all(pages.map((p) => p.close()))
+  await browser.close()
+}
+// 打开所有页面
+export const openPageAll = async (sites: GetSites) => {
+  const browser = await puppeteer.launch({
+    headless: false,
+    userDataDir: './user_data'
+  })
 
-  try {
-    await page.waitForNavigation({ timeout: 5000 })
-    const failedScreenshot = await page.screenshot()
-    await updateSite(site.id, {
-      state: SiteState.Failed,
-      screenshot: Buffer.from(failedScreenshot)
+  await Promise.all(
+    sites.map(async (site) => {
+      const page = await browser.newPage()
+      await open(page, site)
     })
-  } catch {}
-
-  await updateSite(site.id, { state: SiteState.Success })
+  )
 
   const pages = await browser.pages()
   await Promise.all(pages.map((p) => p.close()))

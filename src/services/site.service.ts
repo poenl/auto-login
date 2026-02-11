@@ -1,17 +1,19 @@
-import { eq } from 'drizzle-orm'
+import { eq, getTableColumns } from 'drizzle-orm'
 import { sitesTable, SiteState } from '../db/schema'
 import db from '../lib/db'
 
+const siteFields = {
+  id: sitesTable.id,
+  name: sitesTable.name,
+  url: sitesTable.url,
+  screenshot: sitesTable.screenshot,
+  state: sitesTable.state,
+  updatedAt: sitesTable.updatedAt
+}
+
 export const getSites = async (pagenum: number = 1, pagesize: number = 10) => {
   const sites = await db
-    .select({
-      id: sitesTable.id,
-      name: sitesTable.name,
-      url: sitesTable.url,
-      screenshot: sitesTable.screenshot,
-      state: sitesTable.state,
-      updatedAt: sitesTable.updatedAt
-    })
+    .select(siteFields)
     .from(sitesTable)
     .limit(pagesize)
     .offset((pagenum - 1) * pagesize)
@@ -21,8 +23,8 @@ export const getSites = async (pagenum: number = 1, pagesize: number = 10) => {
     screenshot: `data:image/png;base64,${site.screenshot?.toString('base64')}`
   }))
 }
-// 函数返回值类型
-export type Site = Awaited<ReturnType<typeof getSites>>[number]
+// getSites 函数返回值类型
+export type GetSites = Awaited<ReturnType<typeof getSites>>
 
 // 更新状态和截图
 export const updateSite = (id: number, siteData: { state: SiteState; screenshot?: Buffer }) => {
@@ -33,6 +35,27 @@ export const updateSite = (id: number, siteData: { state: SiteState; screenshot?
 }
 
 export const getSite = async (id: number) => {
-  const [site] = await db.select().from(sitesTable).where(eq(sitesTable.id, id))
+  const [site] = await db
+    .select({
+      screenshot: sitesTable.screenshot,
+      state: sitesTable.state,
+      updatedAt: sitesTable.updatedAt
+    })
+    .from(sitesTable)
+    .where(eq(sitesTable.id, id))
+  const result = {
+    ...site,
+    screenshot: `data:image/png;base64,${site.screenshot!.toString('base64')}`
+  }
+  return result
+}
+
+// getSite 函数返回值类型
+export type GetSite = Awaited<ReturnType<typeof getSite>>
+
+export const getSiteInfo = async (id: number) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { screenshot, createdAt, updatedAt, ...rest } = getTableColumns(sitesTable)
+  const [site] = await db.select(rest).from(sitesTable).where(eq(sitesTable.id, id))
   return site
 }
