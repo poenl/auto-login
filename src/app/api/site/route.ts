@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     .values({ ...body.data, state: SiteState.Initializing })
     .returning()
 
-  await openPage(site)
+  openPage(site)
 
   return Response.json({ message: '添加成功', data: site })
 }

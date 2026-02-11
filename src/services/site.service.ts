@@ -1,5 +1,5 @@
 import { eq, getTableColumns } from 'drizzle-orm'
-import { sitesTable, SiteState } from '../db/schema'
+import { SiteSchema, sitesTable, SiteState } from '../db/schema'
 import db from '../lib/db'
 
 const siteFields = {
@@ -58,4 +58,11 @@ export const getSiteInfo = async (id: number) => {
   const { screenshot, createdAt, updatedAt, ...rest } = getTableColumns(sitesTable)
   const [site] = await db.select(rest).from(sitesTable).where(eq(sitesTable.id, id))
   return site
+}
+
+export type GetSiteInfo = Awaited<ReturnType<typeof getSiteInfo>>
+
+// 修改
+export const updateSiteInfo = async (id: number, siteData: Partial<SiteSchema>) => {
+  return db.update(sitesTable).set(siteData).where(eq(sitesTable.id, id)).returning()
 }

@@ -1,6 +1,7 @@
 import { getSiteInfo } from '@/src/services/site.service'
 
-export const GET = async (_: unknown, { params }: { params: { id: number } }) => {
-  const siteInfo = await getSiteInfo(params.id)
+export const GET = async (_: unknown, { params }: { params: Promise<{ id: number }> }) => {
+  const { id } = await params
+  const siteInfo = await getSiteInfo(id)
   return Response.json(siteInfo)
 }

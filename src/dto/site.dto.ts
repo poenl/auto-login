@@ -33,3 +33,5 @@ export const addSiteDto = z
       })
     }
   })
+
+export type AddSiteDto = z.infer<typeof addSiteDto>

@@ -88,38 +88,27 @@ export const openPage = async (site: typeof sitesTable.$inferSelect) => {
     screenshot: Buffer.from(runningScreenShot)
   })
 
-  // 异步执行
-  const asyncFn = async () => {
-    if (site.storage) {
-      await page.evaluateOnNewDocument(
-        (storage) => {
-          for (const [key, value] of Object.entries(storage)) {
-            localStorage.setItem(key, value)
-          }
-        },
-        JSON.parse(site.storage) as object
-      )
-    }
-
-    if (site.cookie) {
-      const cookies = normalizeCookies(JSON.parse(site.cookie))
-      await browser.setCookie(...cookies)
-    }
-
-    await open(page, site)
-
-    const pages = await browser.pages()
-    await Promise.all(pages.map((p) => p.close()))
-    await browser.close()
+  if (site.storage) {
+    await page.evaluateOnNewDocument(
+      (storage) => {
+        for (const [key, value] of Object.entries(storage)) {
+          localStorage.setItem(key, value)
+        }
+      },
+      JSON.parse(site.storage) as object
+    )
   }
 
-  try {
-    asyncFn()
-  } catch {
-    updateSite(site.id, { state: SiteState.Failed })
+  if (site.cookie) {
+    const cookies = normalizeCookies(JSON.parse(site.cookie))
+    await browser.setCookie(...cookies)
   }
 
-  return
+  await open(page, site)
+
+  const pages = await browser.pages()
+  await Promise.all(pages.map((p) => p.close()))
+  await browser.close()
 }
 // 刷新页面
 export const refreshPage = async (site: { id: number; url: string }) => {

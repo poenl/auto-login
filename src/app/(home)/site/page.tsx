@@ -19,31 +19,64 @@ import { addSiteDto } from '@/src/dto/site.dto'
 import { useEffect, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Spinner } from '@/src/components/ui/spinner'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/zh_CN'
+import useSWR from 'swr'
+import { GetSiteInfo } from '@/src/services/site.service'
 
 export default function Test() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const { control, handleSubmit, trigger, setValue } = useForm({
     resolver: zodResolver(addSiteDto)
   })
+
+  const siteId = searchParams.get('id')
+  const { data } = useSWR(siteId ? `/api/site/info/${siteId}` : null, async (url) => {
+    const res = await fetch(url)
+    return res.json() as Promise<GetSiteInfo>
+  })
+  // 如果是编辑模式，则设置默认值
+  useEffect(() => {
+    if (!data) return
+    setValue('name', data.name)
+    setValue('url', data.url)
+    if (data.storage) setValue('storage', data.storage)
+    if (data.cookie) setValue('cookie', data.cookie)
+    setValue('interval', data.interval)
+  }, [data, setValue])
+  // 提交
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    setLoading(true)
-    const res = await fetch('/api/site', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    })
-    setLoading(false)
-    if (!res.ok) toast.error((await res.json()).message)
-    else {
-      toast.success('添加成功')
-      router.push('/')
+    if (!siteId) {
+      setLoading(true)
+      const res = await fetch('/api/site', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      setLoading(false)
+      if (!res.ok) toast.error((await res.json()).message)
+      else {
+        toast.success('添加成功')
+        router.push('/')
+      }
+    } else {
+      setLoading(true)
+      const res = await fetch(`/api/site/${siteId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      })
+      setLoading(false)
+      if (!res.ok) toast.error((await res.json()).message)
+      else {
+        toast.success('修改成功')
+        router.push('/')
+      }
     }
   }
-
+  // 同步storage和cookie状态
   const storage = useWatch({ control, name: 'storage' })
   const cookie = useWatch({ control, name: 'cookie' })
 
@@ -208,7 +241,7 @@ export default function Test() {
               <Field orientation="horizontal">
                 <Button type="submit" disabled={loading}>
                   {loading && <Spinner data-icon="inline-start" />}
-                  Submit
+                  {siteId ? '更新' : '提交'}
                 </Button>
                 <Button variant="outline" type="button">
                   Cancel
