@@ -6,15 +6,15 @@ import { NextRequest } from 'next/server'
 import { addSiteDto } from '@/src/dto/site.dto'
 import { openPage } from '@/src/lib/puppeteer'
 
-export async function DELETE(_: unknown, { params }: { params: Promise<{ id: number }> }) {
+export async function DELETE(_: unknown, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [site] = await db.delete(sitesTable).where(eq(sitesTable.id, id)).returning()
+  const [site] = await db.delete(sitesTable).where(eq(sitesTable.id, +id)).returning()
   return Response.json({ message: '删除成功', date: site })
 }
 
-export async function GET(_: unknown, { params }: { params: Promise<{ id: number }> }) {
+export async function GET(_: unknown, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const site = await getSite(id)
+  const site = await getSite(+id)
 
   return Response.json(site)
 }
@@ -33,18 +33,18 @@ const getIsUpdateSite = async (newSite: Partial<SiteSchema>, oldSite: GetSiteInf
 
 export const PUT = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: number | undefined }> }
+  { params }: { params: Promise<{ id: string | undefined }> }
 ) => {
   const [{ id }, site] = await Promise.all([params, request.json()])
   const body = addSiteDto.safeParse(site)
 
   if (!id || !body.success) return Response.json({ message: '参数错误' })
 
-  const oldSite = await getSiteInfo(id)
+  const oldSite = await getSiteInfo(+id)
   const isUpdateSite = await getIsUpdateSite(body.data, oldSite)
   // 站点关键配置修改,重置状态
   const newSite = isUpdateSite ? { ...body.data, state: SiteState.Initializing } : body.data
-  const [newSiteInfo] = await updateSiteInfo(id, newSite)
+  const [newSiteInfo] = await updateSiteInfo(+id, newSite)
   // 重新登录
   if (isUpdateSite) openPage(newSiteInfo)
 

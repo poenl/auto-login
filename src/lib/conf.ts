@@ -30,5 +30,3 @@ export const createAdmin = async () => {
   }
   config.set('user', user)
 }
-
-createAdmin()

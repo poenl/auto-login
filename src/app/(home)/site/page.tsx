@@ -16,25 +16,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src
 import { useForm, SubmitHandler, FieldValues, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addSiteDto } from '@/src/dto/site.dto'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, use } from 'react'
 import { useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Spinner } from '@/src/components/ui/spinner'
 import cronstrue from 'cronstrue'
 import 'cronstrue/locales/zh_CN'
 import useSWR from 'swr'
 import { GetSiteInfo } from '@/src/services/site.service'
 
-export default function Test() {
+export default function Site({ searchParams }: { searchParams: Promise<{ id: string }> }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const { control, handleSubmit, trigger, setValue } = useForm({
     resolver: zodResolver(addSiteDto)
   })
 
-  const siteId = searchParams.get('id')
+  const siteId = use(searchParams).id
   const { data } = useSWR(siteId ? `/api/site/info/${siteId}` : null, async (url) => {
     const res = await fetch(url)
     return res.json() as Promise<GetSiteInfo>

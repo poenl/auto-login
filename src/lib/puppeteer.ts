@@ -31,7 +31,7 @@ const open = async (page: Page, site: { id: number; url: string }) => {
   try {
     await page.goto(site.url, { timeout: 10000 })
 
-    const abortSignal = new AbortController()
+    const controller = new AbortController()
     let isRedirect = false // 是否跳转
 
     const openPage = async () => {
@@ -46,13 +46,13 @@ const open = async (page: Page, site: { id: number; url: string }) => {
       const screenshot = await page.screenshot()
       await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
 
-      setTimeout(abortSignal.abort, 5000)
+      setTimeout(() => controller.abort(), 5000)
     }
 
     const waitFn = async () => {
       try {
-        await page.waitForNavigation({ signal: abortSignal.signal, waitUntil: 'networkidle2' })
-        if (abortSignal.signal.aborted) throw new Error('aborted')
+        await page.waitForNavigation({ signal: controller.signal, waitUntil: 'networkidle2' })
+        if (controller.signal.aborted) throw new Error('aborted')
         // 发生跳转，可能登录失败
         isRedirect = true
         const failedScreenshot = await page.screenshot()
@@ -73,12 +73,16 @@ const open = async (page: Page, site: { id: number; url: string }) => {
     })
   }
 }
+
+const createBrowser = async () => {
+  return puppeteer.launch({
+    headless: false,
+    userDataDir: './config/user_data'
+  })
+}
 // 打开页面
 export const openPage = async (site: typeof sitesTable.$inferSelect) => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    userDataDir: './user_data'
-  })
+  const browser = await createBrowser()
 
   const page = await browser.newPage()
 
@@ -112,10 +116,7 @@ export const openPage = async (site: typeof sitesTable.$inferSelect) => {
 }
 // 刷新页面
 export const refreshPage = async (site: { id: number; url: string }) => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    userDataDir: './user_data'
-  })
+  const browser = await createBrowser()
 
   const page = await browser.newPage()
 
@@ -127,10 +128,7 @@ export const refreshPage = async (site: { id: number; url: string }) => {
 }
 // 打开所有页面
 export const openPageAll = async (sites: GetSites) => {
-  const browser = await puppeteer.launch({
-    headless: false,
-    userDataDir: './user_data'
-  })
+  const browser = await createBrowser()
 
   await Promise.all(
     sites.map(async (site) => {

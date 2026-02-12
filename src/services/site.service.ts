@@ -8,7 +8,8 @@ const siteFields = {
   url: sitesTable.url,
   screenshot: sitesTable.screenshot,
   state: sitesTable.state,
-  updatedAt: sitesTable.updatedAt
+  updatedAt: sitesTable.updatedAt,
+  interval: sitesTable.interval
 }
 
 export const getSites = async (pagenum: number = 1, pagesize: number = 10) => {
