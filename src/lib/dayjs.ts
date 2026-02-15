@@ -10,30 +10,19 @@ dayjs.extend(relativeTime)
 dayjs.extend(updateLocale)
 dayjs.updateLocale('zh-cn', {
   relativeTime: {
-    future: 'in %s',
-    past: '%s 前',
-    // s: 'a few seconds',
-    // m: 'a minute',
-    // mm: '%d 分',
-    // h: 'an hour',
-    // hh: '%d hours',
-    // d: 'a day',
-    // dd: '%d days',
-    // M: 'a month',
-    // MM: '%d months',
-    // y: 'a year',
-    // yy: '%d years'
-    s: '刚刚',
-    m: '1 分钟前',
-    mm: '%d 分钟前',
-    h: '1 小时前',
-    hh: '%d 小时前',
-    d: '1 天前',
-    dd: '%d 天前',
-    M: '1 个月前',
-    MM: '%d 个月前',
-    y: '1 年前',
-    yy: '%d 年前'
+    future: '%s后',
+    past: '%s前',
+    s: '%d 秒',
+    m: '1 分钟',
+    mm: '%d 分钟',
+    h: '1 小时',
+    hh: '%d 小时',
+    d: '1 天',
+    dd: '%d 天',
+    M: '1 个月',
+    MM: '%d 个月',
+    y: '1 年',
+    yy: '%d 年'
   }
 })
 export const date = dayjs

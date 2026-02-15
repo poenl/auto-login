@@ -101,8 +101,8 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
     <div className="p-4 bg-secondary h-full flex justify-center items-center">
       <Card className="max-w-200 flex-1">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Login with your Apple or Google account</CardDescription>
+          <CardTitle className="text-xl">添加站点</CardTitle>
+          <CardDescription>添加需要定时登录的站点</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -115,14 +115,13 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   defaultValue=""
                   render={({ field, fieldState }) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>名称</FieldLabel>
                       <Input
                         id={field.name}
-                        placeholder="Name"
+                        placeholder="站点名称"
                         {...field}
                         aria-invalid={fieldState.invalid}
                       />
-                      <FieldDescription>Enter your name</FieldDescription>
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
@@ -134,14 +133,13 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   defaultValue=""
                   render={({ field, fieldState }) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Card Number</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>登录页面</FieldLabel>
                       <Input
                         id={field.name}
-                        placeholder="1234 5678 9012 3456"
+                        placeholder="https://"
                         {...field}
                         aria-invalid={fieldState.invalid}
                       />
-                      <FieldDescription>Enter your 16-digit card number</FieldDescription>
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
@@ -153,11 +151,10 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   defaultValue=""
                   render={({ field, fieldState }) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
-                      <FieldDescription>12</FieldDescription>
+                      <FieldLabel htmlFor={field.name}>存储</FieldLabel>
                       <Textarea
                         id={field.name}
-                        placeholder="Add any additional comments"
+                        placeholder="{key: value, ...}"
                         className="resize-none max-h-30"
                         aria-invalid={fieldState.invalid}
                         {...field}
@@ -173,11 +170,10 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   defaultValue=""
                   render={({ field, fieldState }) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>Comments</FieldLabel>
-                      <FieldDescription>12</FieldDescription>
+                      <FieldLabel htmlFor={field.name}>cookie</FieldLabel>
                       <Textarea
                         id={field.name}
-                        placeholder="Add any additional comments"
+                        placeholder="{key: value, ...}"
                         className="resize-none max-h-30"
                         aria-invalid={fieldState.invalid}
                         {...field}
@@ -242,8 +238,8 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   {loading && <Spinner data-icon="inline-start" />}
                   {siteId ? '更新' : '提交'}
                 </Button>
-                <Button variant="outline" type="button">
-                  Cancel
+                <Button variant="outline" type="button" onClick={() => router.back()}>
+                  返回
                 </Button>
               </Field>
             </FieldGroup>

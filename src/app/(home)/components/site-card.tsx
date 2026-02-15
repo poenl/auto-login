@@ -18,8 +18,11 @@ import { BadgeCheck, RotateCcw, CircleX } from 'lucide-react'
 import { SiteState } from '@/src/db/schema'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
-import { useState, useEffect, useEffectEvent } from 'react'
+import { useState, useEffect, useEffectEvent, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/components/ui/tooltip'
+import { Cron } from 'croner'
+import { useFocus } from '@/src/lib/hooks'
 
 // 状态中文
 const stateMap: Record<SiteState, string> = {
@@ -49,7 +52,7 @@ const stateStyleMap: Record<SiteState, string> = {
   timeout: 'text-red-500'
 }
 
-export function SiteCard({
+export const SiteCard = memo(function SiteCard({
   deleteSite,
   ...param
 }: GetSites[number] & {
@@ -83,13 +86,28 @@ export function SiteCard({
   }, [data])
 
   const handleRefresh = async () => {
-    setSite((site) => ({ ...site, state: SiteState.Running }))
     await fetch(`/api/site/refresh/${param.id}`)
+    setSite((site) => ({ ...site, state: SiteState.Running }))
   }
   // 修改
   const handleEdit = () => {
     router.push(`/site?id=${param.id}`)
   }
+
+  // 下次刷新时间
+  const nextRefreshTime = useMemo(() => {
+    const cron = new Cron(site.interval || param.interval).nextRun()
+    return date(cron).toNow()
+  }, [site, param])
+  // 上次刷新时间
+  const [lastRefreshTime, updateLastRefreshTime] = useFocus(() => date(site.updatedAt).fromNow())
+  useEffect(() => {
+    if (isPending) return
+    const timer = setTimeout(() => {
+      updateLastRefreshTime()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [site.updatedAt, isPending, updateLastRefreshTime])
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -114,17 +132,18 @@ export function SiteCard({
         <Button variant="destructive" size="sm" onClick={() => deleteSite(param.id)}>
           删除
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="ml-auto"
-          disabled={isPending}
-          onClick={handleRefresh}
-        >
-          {date(site.updatedAt).fromNow(true)}
-          {isPending ? <Spinner /> : <RotateCcw />}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild className="ml-auto">
+            <Button variant="ghost" size="sm" disabled={isPending} onClick={handleRefresh}>
+              {lastRefreshTime}
+              {isPending ? <Spinner /> : <RotateCcw />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>下次更新：{nextRefreshTime}</p>
+          </TooltipContent>
+        </Tooltip>
       </CardFooter>
     </Card>
   )
-}
+})
