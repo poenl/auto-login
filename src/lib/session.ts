@@ -1,8 +1,9 @@
 import 'server-only'
 import { JWTPayload, SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
+import { config } from '@/src/lib/conf'
 
-const secretKey = process.env.SESSION_SECRET
+const secretKey = config.get('sessionKey')
 const encodedKey = new TextEncoder().encode(secretKey)
 
 export async function encrypt(payload: JWTPayload) {

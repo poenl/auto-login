@@ -12,17 +12,6 @@ export enum SiteState {
   Running = 'running',
   // 检查中
   Checking = 'checking',
-  // // 停止
-  // Stopped = 'stopped',
-  // // 暂停
-  // Paused = 'paused',
-  // // 暂停中
-  // Pausing = 'pausing',
-  // // 恢复中
-  // Resuming = 'resuming',
-  // // 重启中
-  // Restarting = 'restarting'
-  // // 重置中
   // 超时
   Timeout = 'timeout'
 }

@@ -19,5 +19,7 @@ export async function POST(req: NextRequest) {
 
   await createSession(name)
 
-  return Response.json({ message: '登录成功' })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _, ...userInfo } = user
+  return Response.json(userInfo)
 }

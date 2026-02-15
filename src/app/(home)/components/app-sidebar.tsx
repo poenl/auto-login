@@ -2,8 +2,6 @@
 
 import * as React from 'react'
 
-import { SearchForm } from '@/src/app/(home)/components/search-form'
-import { VersionSwitcher } from '@/src/app/(home)/components/version-switcher'
 import {
   Sidebar,
   SidebarContent,
@@ -19,31 +17,31 @@ import {
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { NavUser } from './nav-user'
 
-// This is sample data.
-const data = {
+export const data = {
   versions: ['1.0.1', '1.1.0-alpha', '2.0.0-beta1'],
   navMain: [
     {
-      title: 'Getting Started',
+      title: '站点管理',
       url: '',
       items: [
         {
-          title: 'Installation',
+          title: '站点列表',
           url: '/'
         },
         {
-          title: 'Project Structure',
+          title: '添加站点',
           url: '/site'
         }
       ]
     },
     {
-      title: 'Building Your Application',
+      title: '系统设置',
       url: '#',
       items: [
         {
-          title: 'Routing',
+          title: '设置',
           url: '/settings'
         }
       ]
@@ -61,8 +59,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
-        <SearchForm />
+        <NavUser />
       </SidebarHeader>
       <SidebarContent>
         {data.navMain.map((item) => (

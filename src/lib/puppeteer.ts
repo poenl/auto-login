@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import puppeteer, { CookieData, Page } from 'puppeteer'
 import { sitesTable } from '@/src/db/schema'
 import { SiteState } from '@/src/db/schema'
@@ -29,48 +31,40 @@ function normalizeCookies(cookies: any[]): CookieData[] {
 
 const open = async (page: Page, site: { id: number; url: string }) => {
   try {
-    await page.goto(site.url, { timeout: 10000 })
+    await page.goto(site.url, { timeout: 10000, waitUntil: 'networkidle2' })
 
-    const controller = new AbortController()
-    let isRedirect = false // 是否跳转
-
-    const openPage = async () => {
-      const timer = setTimeout(() => {
-        throw new Error('timeout')
-      }, 10000)
-      await page.waitForNetworkIdle({ concurrency: 2 })
-      clearTimeout(timer)
-
-      // 页面已经跳转,跳过检查
-      if (isRedirect) return
-      const screenshot = await page.screenshot()
-      await updateSite(site.id, { state: SiteState.Checking, screenshot: Buffer.from(screenshot) })
-
-      setTimeout(() => controller.abort(), 5000)
+    // 提前发生跳转
+    if (page.url() !== site.url) {
+      const failedScreenshot = await page.screenshot()
+      await updateSite(site.id, {
+        state: SiteState.Failed,
+        screenshot: Buffer.from(failedScreenshot)
+      })
+      return
     }
 
-    const waitFn = async () => {
-      try {
-        await page.waitForNavigation({ signal: controller.signal, waitUntil: 'networkidle2' })
-        if (controller.signal.aborted) throw new Error('aborted')
-        // 发生跳转，可能登录失败
-        isRedirect = true
-        const failedScreenshot = await page.screenshot()
-        await updateSite(site.id, {
-          state: SiteState.Failed,
-          screenshot: Buffer.from(failedScreenshot)
-        })
-      } catch {
-        await updateSite(site.id, { state: SiteState.Success })
-      }
+    const updateCheckSite = async () => {
+      const checkScreenshot = await page.screenshot()
+      await updateSite(site.id, {
+        state: SiteState.Checking,
+        screenshot: Buffer.from(checkScreenshot)
+      })
     }
 
-    await Promise.all([openPage(), waitFn()])
+    try {
+      await Promise.all([updateCheckSite(), page.waitForNavigation({ timeout: 10000 })])
+
+      const failedScreenshot = await page.screenshot()
+      await updateSite(site.id, {
+        state: SiteState.Failed,
+        screenshot: Buffer.from(failedScreenshot)
+      })
+    } catch {
+      await updateSite(site.id, { state: SiteState.Success })
+    }
   } catch {
     // 页面打开超时
-    await updateSite(site.id, {
-      state: SiteState.Timeout
-    })
+    await updateSite(site.id, { state: SiteState.Timeout })
   }
 }
 

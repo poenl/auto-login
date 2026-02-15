@@ -17,9 +17,11 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signupDto } from '@/src/dto/auth.dto'
+import { useUserStore } from '@/src/store/user'
 
 export default function LoginPage() {
   const router = useRouter()
+  const setUserInfo = useUserStore((state) => state.setUserInfo)
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(signupDto),
@@ -37,6 +39,9 @@ export default function LoginPage() {
     if (res.ok) {
       toast.success('登录成功')
       router.push('/')
+      const user = await res.json()
+      if (!user.avatar) user.avatar = 'https://github.com/shadcn.png'
+      setUserInfo(user)
     } else {
       const error = await res.json()
       toast.error(error.message)

@@ -1,4 +1,4 @@
-import { createAdmin } from '@/src/lib/conf'
+import { createAdmin, createSessionKey } from '@/src/lib/conf'
 import { setCron } from '@/src/lib/croner'
 
 import next from 'next'
@@ -9,6 +9,7 @@ const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
   createAdmin()
+  createSessionKey()
   setCron()
 
   createServer((req, res) => {

@@ -38,9 +38,12 @@ export const updateSite = (id: number, siteData: { state: SiteState; screenshot?
 export const getSite = async (id: number) => {
   const [site] = await db
     .select({
+      id: sitesTable.id,
+      url: sitesTable.url,
       screenshot: sitesTable.screenshot,
       state: sitesTable.state,
-      updatedAt: sitesTable.updatedAt
+      updatedAt: sitesTable.updatedAt,
+      interval: sitesTable.interval
     })
     .from(sitesTable)
     .where(eq(sitesTable.id, id))

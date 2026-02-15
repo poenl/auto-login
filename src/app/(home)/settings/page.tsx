@@ -1,35 +1,71 @@
 'use client'
 
 import { Button } from '@/src/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from '@/src/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Input } from '@/src/components/ui/input'
 import { Label } from '@/src/components/ui/label'
 import { Separator } from '@/src/components/ui/separator'
 import { Switch } from '@/src/components/ui/switch'
 import { Badge } from '@/src/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/src/components/ui/avatar'
+import { Bell, Lock, User, Shield, Trash2, Mail, Smartphone, LogOut, Key } from 'lucide-react'
 import {
-  Bell,
-  Lock,
-  User,
-  Shield,
-  Trash2,
-  Mail,
-  Smartphone,
-  LogOut,
-  Key,
-  Palette,
-  Clock
-} from 'lucide-react'
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldSet
+} from '@/src/components/ui/field'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import { updateUserDto } from '@/src/dto/auth.dto'
+import { zodResolver } from '@hookform/resolvers/zod'
+import useSWR from 'swr'
+import { useUserStore } from '@/src/store/user'
+import { UserInfo } from '@/src/store/user'
+import { useState } from 'react'
+import z from 'zod'
 
 export default function Settings() {
+  const { control, handleSubmit } = useForm({ resolver: zodResolver(updateUserDto) })
+  const userInfo = useUserStore((state) => state.userInfo)
+  const setUserInfo = useUserStore((state) => state.setUserInfo)
+  const [avatar, setAvatar] = useState(userInfo.avatar)
+
+  const { data, mutate } = useSWR(
+    '/api/user',
+    async () => {
+      const res = await fetch('/api/user')
+      return res.json() as Promise<UserInfo>
+    },
+    {
+      fallbackData: userInfo,
+      revalidateOnMount: false,
+      revalidateOnFocus: false
+    }
+  )
+
+  const onSubmit: SubmitHandler<z.infer<typeof updateUserDto>> = async (fields) => {
+    const formData = new FormData()
+    if (fields.name) formData.append('name', fields.name)
+    if (fields.password) formData.append('password', fields.password)
+    if (fields.avatar) formData.append('avatar', fields.avatar)
+
+    const result = await mutate(
+      () =>
+        fetch('/api/user', {
+          method: 'PUT',
+          body: formData
+        }).then((res) => res.json()),
+      {
+        optimisticData: {
+          name: fields.name || data.name,
+          avatar: avatar || data.avatar
+        }
+      }
+    )
+    if (result) setUserInfo(result)
+  }
+
   return (
     <div className="flex-1 space-y-6 p-4">
       {/* 页面标题 */}
@@ -57,122 +93,78 @@ export default function Settings() {
             </div>
             <CardDescription>更新您的个人信息和头像</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center gap-6">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src="https://github.com/shadcn.png" alt="用户头像" />
-                <AvatarFallback>用户</AvatarFallback>
-              </Avatar>
-              <div className="space-y-2">
-                <Button variant="outline" size="sm">
-                  更换头像
-                </Button>
-                <p className="text-xs text-muted-foreground">支持 JPG、PNG 格式，最大 2MB</p>
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="username">用户名</Label>
-                <Input id="username" placeholder="输入用户名" defaultValue="username" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="displayName">显示名称</Label>
-                <Input id="displayName" placeholder="输入显示名称" defaultValue="显示名称" />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="email">邮箱地址</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="输入邮箱"
-                  defaultValue="user@example.com"
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <FieldSet>
+                <Controller
+                  name="avatar"
+                  control={control}
+                  render={({ field }) => (
+                    <Field>
+                      <div className="flex items-center gap-6">
+                        <Avatar className="h-20 w-20">
+                          <AvatarImage src={avatar || userInfo.avatar} alt="用户头像" />
+                          <AvatarFallback>用户</AvatarFallback>
+                        </Avatar>
+                        <div className="space-y-2">
+                          <input
+                            type="file"
+                            hidden
+                            id={field.name}
+                            ref={field.ref}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) setAvatar(URL.createObjectURL(file))
+                              field.onChange(file)
+                            }}
+                          />
+                          <FieldLabel htmlFor={field.name}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              type="button"
+                              className="pointer-events-none"
+                            >
+                              更换头像
+                            </Button>
+                          </FieldLabel>
+                          <FieldDescription> 支持 JPG、PNG 格式，最大 2MB</FieldDescription>
+                        </div>
+                      </div>
+                    </Field>
+                  )}
                 />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="bio">个人简介</Label>
-                <Input id="bio" placeholder="介绍一下自己..." />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end gap-2">
-            <Button variant="outline">取消</Button>
-            <Button>保存更改</Button>
-          </CardFooter>
-        </Card>
 
-        {/* 外观设置 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-primary" />
-              <CardTitle>外观</CardTitle>
-            </div>
-            <CardDescription>自定义应用的外观和主题</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>深色模式</Label>
-                <p className="text-sm text-muted-foreground">在浅色和深色主题之间切换</p>
-              </div>
-              <Switch />
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <Label>主题颜色</Label>
-              <div className="flex gap-3">
-                {[
-                  'bg-blue-500',
-                  'bg-green-500',
-                  'bg-purple-500',
-                  'bg-orange-500',
-                  'bg-pink-500'
-                ].map((color) => (
-                  <button
-                    key={color}
-                    className={`h-8 w-8 rounded-full ${color} ring-2 ring-offset-2 ring-transparent hover:ring-primary transition-all`}
-                  />
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 自动执行间隔 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <CardTitle>自动执行间隔</CardTitle>
-            </div>
-            <CardDescription>设置自动任务的执行频率</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="interval-type">执行频率</Label>
-                <select 
-                  id="interval-type"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="daily">每天</option>
-                  <option value="weekly">每周</option>
-                  <option value="monthly">每月</option>
-                  <option value="custom">自定义 (Cron)</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="interval-cron">Cron 表达式</Label>
-                <Input 
-                  id="interval-cron" 
-                  placeholder="0 0 * * *" 
-                  disabled
+                <Controller
+                  control={control}
+                  name="name"
+                  defaultValue={data.name}
+                  render={({ field, fieldState }) => (
+                    <Field>
+                      <FieldLabel>用户名</FieldLabel>
+                      <Input id="name" type="name" placeholder="输入您的用户名" {...field} />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
                 />
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              选择预设频率或自定义 Cron 表达式 (分 时 日 月 周)
-            </p>
+
+                <Controller
+                  name="password"
+                  control={control}
+                  defaultValue=""
+                  render={({ field, fieldState }) => (
+                    <Field>
+                      <FieldLabel htmlFor="password">密码</FieldLabel>
+                      <Input id="password" type="password" placeholder="输入您的密码" {...field} />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+                <Field orientation="horizontal">
+                  <Button>保存更改</Button>
+                </Field>
+              </FieldSet>
+            </form>
           </CardContent>
         </Card>
 
