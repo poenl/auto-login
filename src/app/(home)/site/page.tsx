@@ -101,8 +101,8 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
     <div className="p-4 bg-secondary h-full flex justify-center items-center">
       <Card className="max-w-200 flex-1">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">添加站点</CardTitle>
-          <CardDescription>添加需要定时登录的站点</CardDescription>
+          <CardTitle className="text-xl">{siteId ? '修改站点' : '添加站点'}</CardTitle>
+          <CardDescription>{siteId ? '修改站点信息' : '添加需要定时登录的站点'}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -151,10 +151,10 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   defaultValue=""
                   render={({ field, fieldState }) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>存储</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>cookie</FieldLabel>
                       <Textarea
                         id={field.name}
-                        placeholder="{key: value, ...}"
+                        placeholder="[{name: *, domain: *, ...}, ...]"
                         className="resize-none max-h-30"
                         aria-invalid={fieldState.invalid}
                         {...field}
@@ -170,7 +170,7 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
                   defaultValue=""
                   render={({ field, fieldState }) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>cookie</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>存储</FieldLabel>
                       <Textarea
                         id={field.name}
                         placeholder="{key: value, ...}"

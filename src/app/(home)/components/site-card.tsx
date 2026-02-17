@@ -18,11 +18,11 @@ import { BadgeCheck, RotateCcw, CircleX } from 'lucide-react'
 import { SiteState } from '@/src/db/schema'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
-import { useState, useEffect, useEffectEvent, useMemo, memo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/components/ui/tooltip'
 import { Cron } from 'croner'
-import { useFocus } from '@/src/lib/hooks'
+import { useFocus } from '@/src/hooks/use-focus'
 
 // 状态中文
 const stateMap: Record<SiteState, string> = {
@@ -76,13 +76,12 @@ export const SiteCard = memo(function SiteCard({
     }
   )
 
-  const changeSite = useEffectEvent((newSite: GetSite) => {
-    setSite((site) => ({ ...site, ...newSite }))
-  })
-
   useEffect(() => {
     if (!data) return
-    changeSite(data)
+    const timer = setTimeout(() => {
+      setSite((site) => ({ ...site, ...data }))
+    })
+    return () => clearTimeout(timer)
   }, [data])
 
   const handleRefresh = async () => {
@@ -97,7 +96,7 @@ export const SiteCard = memo(function SiteCard({
   // 下次刷新时间
   const nextRefreshTime = useMemo(() => {
     const cron = new Cron(site.interval || param.interval).nextRun()
-    return date(cron).toNow()
+    return date(new Date()).to(cron)
   }, [site, param])
   // 上次刷新时间
   const [lastRefreshTime, updateLastRefreshTime] = useFocus(() => date(site.updatedAt).fromNow())

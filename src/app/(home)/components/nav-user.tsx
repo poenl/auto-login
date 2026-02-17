@@ -19,10 +19,13 @@ import {
   useSidebar
 } from '@/src/components/ui/sidebar'
 import { useUserStore } from '@/src/store/user'
+import Link from 'next/link'
+import { useLogout } from '@/src/hooks/use-logout'
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const user = useUserStore((state) => state.userInfo)
+  const logout = useLogout()
 
   return (
     <SidebarMenu>
@@ -33,12 +36,12 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
+              <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <span className="truncate font-medium">{user.name}</span>
-              <EllipsisVertical />
+              <EllipsisVertical className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -58,19 +61,23 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <CircleUser />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings />
-                Billing
-              </DropdownMenuItem>
+              <Link href="/profile">
+                <DropdownMenuItem>
+                  <CircleUser />
+                  账户
+                </DropdownMenuItem>
+              </Link>
+              <Link href="settings">
+                <DropdownMenuItem>
+                  <Settings />
+                  设置
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
               <LogOut />
-              Log out
+              退出登录
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

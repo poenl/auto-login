@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 
 export interface UserInfo {
   name: string
@@ -9,20 +9,22 @@ export interface UserInfo {
 interface UserStore {
   userInfo: UserInfo
   setUserInfo: (userInfo: UserInfo) => void
+  clearUserInfo: () => void
 }
 
-export const useUserStore = create(
-  persist<UserStore>(
+export const useUserStore = create<UserStore>()(
+  persist(
     (set) => ({
       userInfo: {
         name: '',
         avatar: ''
       },
-      setUserInfo: (userInfo) => set({ userInfo })
+      setUserInfo: (userInfo) => set({ userInfo }),
+      clearUserInfo: () => set({ userInfo: { name: '', avatar: '' } })
     }),
     {
       name: 'user-storage',
-      storage: createJSONStorage(() => localStorage)
+      partialize: (state) => ({ userInfo: state.userInfo })
     }
   )
 )
