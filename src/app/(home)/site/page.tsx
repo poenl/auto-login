@@ -25,6 +25,7 @@ import cronstrue from 'cronstrue'
 import 'cronstrue/locales/zh_CN'
 import useSWR from 'swr'
 import { GetSiteInfo } from '@/src/services/site.service'
+import { Check, Undo2 } from 'lucide-react'
 
 export default function Site({ searchParams }: { searchParams: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -235,10 +236,11 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
 
               <Field orientation="horizontal">
                 <Button type="submit" disabled={loading}>
-                  {loading && <Spinner data-icon="inline-start" />}
+                  {loading ? <Spinner data-icon="inline-start" /> : <Check />}
                   {siteId ? '更新' : '提交'}
                 </Button>
                 <Button variant="outline" type="button" onClick={() => router.back()}>
+                  <Undo2 />
                   返回
                 </Button>
               </Field>

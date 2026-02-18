@@ -17,9 +17,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { NavUser } from './nav-user'
 import { ComponentProps, useEffect } from 'react'
+import { CirclePlus, House, Settings, UserPen } from 'lucide-react'
 
 export const data = {
-  versions: ['1.0.1', '1.1.0-alpha', '2.0.0-beta1'],
   navMain: [
     {
       title: '站点',
@@ -27,11 +27,13 @@ export const data = {
       items: [
         {
           title: '站点管理',
-          url: '/'
+          url: '/',
+          icon: <House />
         },
         {
           title: '添加站点',
-          url: '/site'
+          url: '/site',
+          icon: <CirclePlus />
         }
       ]
     },
@@ -41,11 +43,13 @@ export const data = {
       items: [
         {
           title: '账户设置',
-          url: '/profile'
+          url: '/profile',
+          icon: <UserPen />
         },
         {
           title: '系统设置',
-          url: '/settings'
+          url: '/settings',
+          icon: <Settings />
         }
       ]
     }
@@ -76,7 +80,10 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={activeItem === item.url}>
-                      <Link href={item.url}>{item.title}</Link>
+                      <Link href={item.url}>
+                        {item.icon}
+                        {item.title}
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

@@ -14,7 +14,7 @@ import { Badge } from '@/src/components/ui/badge'
 import { Spinner } from '@/src/components/ui/spinner'
 import { GetSites, GetSite } from '@/src/services/site.service'
 import Image from 'next/image'
-import { BadgeCheck, RotateCcw, CircleX } from 'lucide-react'
+import { BadgeCheck, RotateCcw, CircleX, Trash2, Edit } from 'lucide-react'
 import { SiteState } from '@/src/db/schema'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
@@ -126,9 +126,11 @@ export const SiteCard = memo(function SiteCard({
       </CardContent>
       <CardFooter className="gap-2">
         <Button variant="default" size="sm" onClick={handleEdit}>
+          <Edit />
           修改
         </Button>
         <Button variant="destructive" size="sm" onClick={() => deleteSite(param.id)}>
+          <Trash2 />
           删除
         </Button>
         <Tooltip>

@@ -26,7 +26,7 @@ export default function Home() {
     [mutate]
   )
   return (
-    <div className="p-4 h-full grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 auto-rows-min">
+    <div className="p-4 grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
       {sites.map((site) => (
         <SiteCard {...site} key={site.id + site.state} deleteSite={deleteSite} />
       ))}
