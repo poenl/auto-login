@@ -20,10 +20,9 @@ import { useRouter } from 'next/navigation'
 export default function Home() {
   const router = useRouter()
 
-  const { data, mutate } = useSWR('/api/site', (url) =>
+  const { data: sites, mutate } = useSWR('/api/site', (url) =>
     fetch(url).then<GetSites>((res) => res.json())
   )
-  const sites = data || []
 
   // 删除站点
   const deleteSite = useCallback(
@@ -46,6 +45,9 @@ export default function Home() {
   const handleAddSite = () => {
     router.push('/site')
   }
+
+  if (!sites) return null
+
   return (
     <div className="p-4 h-full">
       {sites.length ? (
