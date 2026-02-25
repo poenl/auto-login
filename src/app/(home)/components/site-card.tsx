@@ -60,6 +60,7 @@ export const SiteCard = memo(function SiteCard({
 }) {
   const router = useRouter()
   const [site, setSite] = useState(param)
+  const [isLoading, setIsLoading] = useState(false)
   const isPending =
     site.state === SiteState.Running ||
     site.state === SiteState.Checking ||
@@ -85,7 +86,9 @@ export const SiteCard = memo(function SiteCard({
   }, [data])
 
   const handleRefresh = async () => {
+    setIsLoading(true)
     await fetch(`/api/site/refresh/${param.id}`)
+    setIsLoading(false)
     setSite((site) => ({ ...site, state: SiteState.Running }))
   }
   // 修改
@@ -137,7 +140,7 @@ export const SiteCard = memo(function SiteCard({
           <TooltipTrigger asChild className="ml-auto">
             <Button variant="ghost" size="sm" disabled={isPending} onClick={handleRefresh}>
               {lastRefreshTime}
-              {isPending ? <Spinner /> : <RotateCcw />}
+              {isPending || isLoading ? <Spinner /> : <RotateCcw />}
             </Button>
           </TooltipTrigger>
           <TooltipContent>
