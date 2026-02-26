@@ -34,7 +34,7 @@ export type SiteSchema = InferSelectModel<typeof sitesTable>
 export const recordsTable = sqliteTable('records', {
   id: int().primaryKey({ autoIncrement: true }),
   siteId: integer()
-    .references(() => sitesTable.id)
+    .references(() => sitesTable.id, { onDelete: 'cascade' })
     .notNull(),
   state: text().notNull().$type<SiteState>(),
   screenshot: blob({ mode: 'buffer' }).notNull(),
