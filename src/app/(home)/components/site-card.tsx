@@ -18,7 +18,7 @@ import { BadgeCheck, RotateCcw, CircleX, Trash2, Edit } from 'lucide-react'
 import { SiteState } from '@/src/db/schema'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
-import { useState, useEffect, useMemo, memo } from 'react'
+import { useState, memo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/components/ui/tooltip'
 import { Cron } from 'croner'
@@ -69,37 +69,40 @@ export const SiteCard = memo(function SiteCard({
   deleteSite: (id: number) => void
 }) {
   const router = useRouter()
-  const [site, setSite] = useState(param)
   const [isLoading, setIsLoading] = useState(false)
-  const isPending =
-    site.state === SiteState.Running ||
-    site.state === SiteState.Checking ||
-    site.state === SiteState.Initializing
 
-  const { data } = useSWR(
-    isPending ? `/api/site/${param.id}` : null,
+  const isPending = useCallback(
+    (state: SiteState) =>
+      state === SiteState.Running ||
+      state === SiteState.Checking ||
+      state === SiteState.Initializing,
+    []
+  )
+
+  const { data: site, mutate } = useSWR(
+    `/api/site/${param.id}`,
     (url) => fetch(url).then<GetSite>((res) => res.json()),
     {
       refreshInterval: (data) => {
         if (!data) return 0
-        return isPending ? 1000 : 0
-      }
+
+        if (!isPending(data.state)) {
+          updateLastRefreshTime()
+          updateNextRefreshTime()
+        }
+
+        return isPending(data.state) ? 1000 : 0
+      },
+      fallbackData: param,
+      revalidateOnMount: isPending(param.state)
     }
   )
-
-  useEffect(() => {
-    if (!data) return
-    const timer = setTimeout(() => {
-      setSite((site) => ({ ...site, ...data }))
-    })
-    return () => clearTimeout(timer)
-  }, [data])
 
   const handleRefresh = async () => {
     setIsLoading(true)
     await fetch(`/api/site/refresh/${param.id}`)
     setIsLoading(false)
-    setSite((site) => ({ ...site, state: SiteState.Running }))
+    mutate()
   }
   // 修改
   const handleEdit = () => {
@@ -107,19 +110,13 @@ export const SiteCard = memo(function SiteCard({
   }
 
   // 下次刷新时间
-  const nextRefreshTime = useMemo(() => {
-    const cron = new Cron(site.interval || param.interval).nextRun()
+  const [nextRefreshTime, updateNextRefreshTime] = useFocus(() => {
+    const cron = new Cron(site.interval).nextRun()
     return date(new Date()).to(cron)
-  }, [site, param])
+  })
   // 上次刷新时间
   const [lastRefreshTime, updateLastRefreshTime] = useFocus(() => date(site.updatedAt).fromNow())
-  useEffect(() => {
-    if (isPending) return
-    const timer = setTimeout(() => {
-      updateLastRefreshTime()
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [site.updatedAt, isPending, updateLastRefreshTime])
+
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -172,9 +169,14 @@ export const SiteCard = memo(function SiteCard({
         </Button>
         <Tooltip>
           <TooltipTrigger asChild className="ml-auto">
-            <Button variant="ghost" size="sm" disabled={isPending} onClick={handleRefresh}>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isPending(site.state) || isLoading}
+              onClick={handleRefresh}
+            >
               {lastRefreshTime}
-              {isPending || isLoading ? <Spinner /> : <RotateCcw />}
+              {isPending(site.state) || isLoading ? <Spinner /> : <RotateCcw />}
             </Button>
           </TooltipTrigger>
           <TooltipContent>

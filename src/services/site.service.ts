@@ -43,7 +43,8 @@ export const getSite = async (id: number) => {
       screenshot: sitesTable.screenshot,
       state: sitesTable.state,
       updatedAt: sitesTable.updatedAt,
-      interval: sitesTable.interval
+      interval: sitesTable.interval,
+      name: sitesTable.name
     })
     .from(sitesTable)
     .where(eq(sitesTable.id, id))
