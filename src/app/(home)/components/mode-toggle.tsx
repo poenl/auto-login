@@ -31,9 +31,9 @@ export function ModeToggle({ className }: { className?: string }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
-            <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="light"> 浅色</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="dark">深色</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="system">系统</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>

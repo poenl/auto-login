@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import puppeteer, { CookieData, Page } from 'puppeteer'
 import { sitesTable } from '@/src/db/schema'
 import { SiteState } from '@/src/db/schema'
-import { updateSite, GetSites } from '../services/site.service'
+import { updateSite, GetSites, addRecord } from '../services/site.service'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeCookies(cookies: any[]): CookieData[] {
@@ -55,16 +55,40 @@ const open = async (page: Page, site: { id: number; url: string }) => {
       await Promise.all([updateCheckSite(), page.waitForNavigation({ timeout: 10000 })])
 
       const failedScreenshot = await page.screenshot()
-      await updateSite(site.id, {
-        state: SiteState.Failed,
-        screenshot: Buffer.from(failedScreenshot)
-      })
+
+      await Promise.all([
+        updateSite(site.id, {
+          state: SiteState.Failed,
+          screenshot: Buffer.from(failedScreenshot)
+        }),
+        addRecord({
+          siteId: site.id,
+          state: SiteState.Failed,
+          screenshot: Buffer.from(failedScreenshot)
+        })
+      ])
     } catch {
-      await updateSite(site.id, { state: SiteState.Success })
+      const successScreenshot = await page.screenshot()
+      await Promise.all([
+        updateSite(site.id, { state: SiteState.Success }),
+        addRecord({
+          siteId: site.id,
+          state: SiteState.Success,
+          screenshot: Buffer.from(successScreenshot)
+        })
+      ])
     }
   } catch {
     // 页面打开超时
-    await updateSite(site.id, { state: SiteState.Timeout })
+    const timeoutScreenshot = await page.screenshot()
+    await Promise.all([
+      updateSite(site.id, { state: SiteState.Timeout, screenshot: Buffer.from(timeoutScreenshot) }),
+      addRecord({
+        siteId: site.id,
+        state: SiteState.Timeout,
+        screenshot: Buffer.from(timeoutScreenshot)
+      })
+    ])
   }
 }
 

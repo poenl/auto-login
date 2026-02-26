@@ -1,5 +1,5 @@
 import { eq, getTableColumns } from 'drizzle-orm'
-import { SiteSchema, sitesTable, SiteState } from '../db/schema'
+import { RecordSchema, recordsTable, SiteSchema, sitesTable, SiteState } from '../db/schema'
 import db from '../lib/db'
 
 const siteFields = {
@@ -69,4 +69,17 @@ export type GetSiteInfo = Awaited<ReturnType<typeof getSiteInfo>>
 // 修改
 export const updateSiteInfo = async (id: number, siteData: Partial<SiteSchema>) => {
   return db.update(sitesTable).set(siteData).where(eq(sitesTable.id, id)).returning()
+}
+
+// 添加记录
+export const addRecord = async (siteData: Omit<RecordSchema, 'id' | 'createdAt'>) => {
+  return db.insert(recordsTable).values(siteData).returning()
+}
+
+export const getRecords = async (id: number) => {
+  const records = await db.select().from(recordsTable).where(eq(recordsTable.siteId, id))
+  return records.map((record) => ({
+    ...record,
+    screenshot: `data:image/png;base64,${record.screenshot.toString('base64')}`
+  }))
 }

@@ -23,9 +23,19 @@ import { useRouter } from 'next/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/components/ui/tooltip'
 import { Cron } from 'croner'
 import { useFocus } from '@/src/hooks/use-focus'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/src/components/ui/dialog'
+import { RecordsTable } from './records-table'
 
 // 状态中文
-const stateMap: Record<SiteState, string> = {
+export const stateMap: Record<SiteState, string> = {
   initializing: '初始化',
   running: '运行中',
   checking: '检查中',
@@ -34,7 +44,7 @@ const stateMap: Record<SiteState, string> = {
   timeout: '超时'
 }
 
-const stateIconMap: Record<SiteState, React.ReactNode> = {
+export const stateIconMap: Record<SiteState, React.ReactNode> = {
   initializing: <Spinner />,
   running: <Spinner />,
   checking: <Spinner />,
@@ -43,7 +53,7 @@ const stateIconMap: Record<SiteState, React.ReactNode> = {
   timeout: <CircleX />
 }
 
-const stateStyleMap: Record<SiteState, string> = {
+export const stateStyleMap: Record<SiteState, string> = {
   initializing: 'text-gray-500',
   running: '',
   checking: 'text-yellow-500',
@@ -68,7 +78,7 @@ export const SiteCard = memo(function SiteCard({
 
   const { data } = useSWR(
     isPending ? `/api/site/${param.id}` : null,
-    async (url) => fetch(url).then<GetSite>((res) => res.json()),
+    (url) => fetch(url).then<GetSite>((res) => res.json()),
     {
       refreshInterval: (data) => {
         if (!data) return 0
@@ -116,10 +126,34 @@ export const SiteCard = memo(function SiteCard({
         <CardTitle className="text-xl">{site.name}</CardTitle>
         <CardDescription className="truncate">{site.url}</CardDescription>
         <CardAction>
-          <Badge variant="secondary" className={stateStyleMap[site.state]}>
-            {stateIconMap[site.state]}
-            {stateMap[site.state]}
-          </Badge>
+          <Tooltip>
+            {/* 历史记录弹窗 */}
+            <Dialog>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Badge
+                    variant="secondary"
+                    className={`${stateStyleMap[site.state]} cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700`}
+                  >
+                    {stateIconMap[site.state]}
+                    {stateMap[site.state]}
+                  </Badge>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <DialogContent className="w-md">
+                <DialogHeader>
+                  <DialogTitle>历史记录</DialogTitle>
+                </DialogHeader>
+                <RecordsTable siteId={site.id} />
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">关闭</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <TooltipContent>查看历史记录</TooltipContent>
+          </Tooltip>
         </CardAction>
       </CardHeader>
       <CardContent>

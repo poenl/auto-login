@@ -1,5 +1,5 @@
 import { InferSelectModel } from 'drizzle-orm'
-import { int, text, sqliteTable, blob } from 'drizzle-orm/sqlite-core'
+import { int, text, sqliteTable, blob, integer } from 'drizzle-orm/sqlite-core'
 
 export enum SiteState {
   // 初始化
@@ -30,3 +30,15 @@ export const sitesTable = sqliteTable('sites', {
 })
 
 export type SiteSchema = InferSelectModel<typeof sitesTable>
+
+export const recordsTable = sqliteTable('records', {
+  id: int().primaryKey({ autoIncrement: true }),
+  siteId: integer()
+    .references(() => sitesTable.id)
+    .notNull(),
+  state: text().notNull().$type<SiteState>(),
+  screenshot: blob({ mode: 'buffer' }).notNull(),
+  createdAt: int().notNull().default(Date.now())
+})
+
+export type RecordSchema = InferSelectModel<typeof recordsTable>
