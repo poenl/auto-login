@@ -19,7 +19,10 @@ export const useUserStore = create<UserStore>()(
         name: '',
         avatar: ''
       },
-      setUserInfo: (userInfo) => set({ userInfo }),
+      setUserInfo: (userInfo) => {
+        if (!userInfo.avatar) userInfo.avatar = 'https://github.com/shadcn.png'
+        set({ userInfo })
+      },
       clearUserInfo: () => set({ userInfo: { name: '', avatar: '' } })
     }),
     {

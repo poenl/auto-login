@@ -40,7 +40,6 @@ export default function LoginPage() {
       toast.success('登录成功')
       router.push('/')
       const user = await res.json()
-      if (!user.avatar) user.avatar = 'https://github.com/shadcn.png'
       setUserInfo(user)
     } else {
       const error = await res.json()

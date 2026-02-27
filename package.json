@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "predev": "cross-env NODE_ENV=development tsx src/lib/init-config.ts",
     "build": "next build",
     "start": "tsx server.ts",
     "lint": "eslint",
@@ -49,6 +50,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "commitizen": "^4.3.1",
+    "cross-env": "^10.1.0",
     "cz-conventional-changelog": "^3.3.0",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9",

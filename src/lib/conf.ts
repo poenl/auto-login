@@ -3,12 +3,17 @@ import argon2 from 'argon2'
 import path from 'node:path'
 import { generateSecret } from 'jose'
 
+export interface User {
+  name: string
+  password: string
+  avatar?: string
+}
+export interface Settings {
+  loginTimeout: number
+  checkTimeout: number
+}
 interface Config {
-  user?: {
-    name: string
-    password: string
-    avatar?: string
-  }
+  user?: User
   sites: {
     id: string
     url: string
@@ -16,6 +21,7 @@ interface Config {
     cookie?: string
   }[]
   sessionKey?: string
+  settings: Settings
 }
 
 export const config = new Conf<Config>({
@@ -42,4 +48,15 @@ export const createSessionKey = async () => {
   const sessionKey = (await generateSecret('A128CBC-HS256')) as Uint8Array<ArrayBufferLike>
   const base64String = btoa(String.fromCharCode(...sessionKey))
   config.set('sessionKey', base64String)
+}
+
+export const initSettings = () => {
+  const settings = config.get('settings')
+  if (settings) return
+
+  const defaultSettings = {
+    loginTimeout: 10,
+    checkTimeout: 10
+  }
+  config.set('settings', defaultSettings)
 }

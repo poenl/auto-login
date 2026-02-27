@@ -1,31 +1,23 @@
 'use client'
 
-import { Button } from '@/src/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Label } from '@/src/components/ui/label'
 import { Separator } from '@/src/components/ui/separator'
 import { Switch } from '@/src/components/ui/switch'
 import { Bell, Shield, Mail, Smartphone } from 'lucide-react'
+import { SiteSettings } from './components/site-settings'
+import useSWR from 'swr'
+import { GetUserSettings } from '@/src/services/user.service'
 
 export default function Settings() {
+  const { data: settings, mutate } = useSWR('/api/user/settings', (url) =>
+    fetch(url).then((res) => res.json() as Promise<GetUserSettings>)
+  )
+
   return (
     <div className="flex-1 space-y-6 p-4">
-      {/* 页面标题 */}
-      <div className="mx-auto max-w-2xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">设置</h1>
-            <p className="text-muted-foreground">管理您的账户设置和偏好</p>
-          </div>
-          <Button variant="outline">重置所有设置</Button>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-2xl">
-        <Separator />
-      </div>
-
       <div className="mx-auto max-w-2xl space-y-6">
+        <SiteSettings settings={settings} mutate={mutate} />
         {/* 通知设置 */}
         <Card>
           <CardHeader>

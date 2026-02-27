@@ -21,6 +21,8 @@ export const updateCron = async (site: { id: number; url: string; interval: stri
 
 // 设置定时任务
 export const setCron = async () => {
+  if (process.env.NODE_ENV === 'development') return
+
   const sites = await getSites()
   sites.forEach((site) => {
     const job = new Cron(site.interval, () => refreshPage(site))

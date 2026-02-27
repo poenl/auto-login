@@ -1,4 +1,4 @@
-import { updateUserInfo } from '@/src/services/auth.service'
+import { updateUserInfo } from '@/src/services/user.service'
 import { updateUserDto } from '@/src/dto/auth.dto'
 import { NextRequest } from 'next/server'
 import { config } from '@/src/lib/conf'

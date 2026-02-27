@@ -4,6 +4,7 @@ import puppeteer, { CookieData, Page } from 'puppeteer'
 import { sitesTable } from '@/src/db/schema'
 import { SiteState } from '@/src/db/schema'
 import { updateSite, GetSites, addRecord } from '../services/site.service'
+import { config } from './conf'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeCookies(cookies: any[]): CookieData[] {
@@ -29,9 +30,10 @@ function normalizeCookies(cookies: any[]): CookieData[] {
     })
 }
 
+const settings = config.get('settings')
 const open = async (page: Page, site: { id: number; url: string }) => {
   try {
-    await page.goto(site.url, { timeout: 10000, waitUntil: 'networkidle2' })
+    await page.goto(site.url, { timeout: settings.loginTimeout * 1000, waitUntil: 'networkidle2' })
 
     // 提前发生跳转
     if (page.url() !== site.url) {
@@ -52,7 +54,10 @@ const open = async (page: Page, site: { id: number; url: string }) => {
     }
 
     try {
-      await Promise.all([updateCheckSite(), page.waitForNavigation({ timeout: 10000 })])
+      await Promise.all([
+        updateCheckSite(),
+        page.waitForNavigation({ timeout: settings.checkTimeout * 1000 })
+      ])
 
       const failedScreenshot = await page.screenshot()
 
