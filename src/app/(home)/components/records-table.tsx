@@ -14,6 +14,7 @@ import { stateMap, stateStyleMap } from './site-card'
 import { ScrollArea } from '@/src/components/ui/scroll-area'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/src/components/ui/hover-card'
 import Image from 'next/image'
+import { Button } from '@/src/components/ui/button'
 
 export const RecordsTable = ({ siteId }: { siteId: number }) => {
   const { data } = useSWR(`/api/site/records/${siteId}`, (url) =>
@@ -33,15 +34,17 @@ export const RecordsTable = ({ siteId }: { siteId: number }) => {
         <TableBody>
           {records.map((record) => (
             <TableRow key={record.id}>
-              <TableCell className={`${stateStyleMap[record.state]} flex items-center`}>
+              <TableCell className={`${stateStyleMap[record.state]}`}>
                 {stateMap[record.state]}
               </TableCell>
               <TableCell>
                 <HoverCard openDelay={10} closeDelay={100}>
                   <HoverCardTrigger asChild>
-                    <Eye className="text-neutral-500 cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-400" />
+                    <Button variant="ghost">
+                      <Eye className="text-neutral-500 cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-400 h-5! w-5!" />
+                    </Button>
                   </HoverCardTrigger>
-                  <HoverCardContent className="h-[50vh] max-h-200 aspect-4/3 w-auto">
+                  <HoverCardContent className="h-[50vh] max-h-200 aspect-4/3 w-auto relative">
                     <Image src={record.screenshot} alt="" fill={true} />
                   </HoverCardContent>
                 </HoverCard>
