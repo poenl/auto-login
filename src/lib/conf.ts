@@ -9,8 +9,15 @@ export interface User {
   avatar?: string
 }
 export interface Settings {
-  loginTimeout: number
-  checkTimeout: number
+  site: {
+    loginTimeout: number
+    checkTimeout: number
+  }
+  telegram: {
+    botToken?: string
+    chatId?: string
+    enable?: boolean
+  }
 }
 interface Config {
   user?: User
@@ -55,8 +62,13 @@ export const initSettings = () => {
   if (settings) return
 
   const defaultSettings = {
-    loginTimeout: 10,
-    checkTimeout: 10
+    site: {
+      loginTimeout: 10,
+      checkTimeout: 10
+    },
+    telegram: {
+      enable: false
+    }
   }
   config.set('settings', defaultSettings)
 }

@@ -2,32 +2,18 @@ import { Slider } from '@/src/components/slider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Mail, Globe } from 'lucide-react'
 import { Label } from '@/src/components/ui/label'
-import useSWRMutation from 'swr/mutation'
 import { SettingsDto } from '@/src/dto/user.dto'
-import { KeyedMutator } from 'swr'
-import { Settings } from '@/src/lib/conf'
 import { GetUserSettings } from '@/src/services/user.service'
 
 export const SiteSettings = ({
   settings,
-  mutate
+  onChange,
+  onUpdate
 }: {
-  settings?: GetUserSettings
-  mutate: KeyedMutator<Settings>
+  settings?: GetUserSettings['site']
+  onChange: (arg: SettingsDto) => void
+  onUpdate: (arg: SettingsDto) => void
 }) => {
-  const changeSetting = (patch: Partial<SettingsDto>) => {
-    if (!settings) return
-    mutate({ ...settings, ...patch }, { revalidate: false })
-  }
-
-  const { trigger } = useSWRMutation(
-    '/api/user/settings',
-    async (url, { arg }: { arg: SettingsDto }) =>
-      fetch(url, {
-        method: 'PUT',
-        body: JSON.stringify(arg)
-      })
-  )
   return (
     <Card>
       <CardHeader>
@@ -50,8 +36,8 @@ export const SiteSettings = ({
             max={100}
             minValue={10}
             step={10}
-            onValueChange={([value]) => changeSetting({ loginTimeout: value })}
-            onValueCommit={([value]) => trigger({ loginTimeout: value })}
+            onValueChange={([value]) => onChange({ key: 'site', loginTimeout: value })}
+            onValueCommit={([value]) => onUpdate({ key: 'site', loginTimeout: value })}
           />
         </div>
         <div className="flex items-center justify-between">
@@ -67,8 +53,8 @@ export const SiteSettings = ({
             max={100}
             minValue={10}
             step={10}
-            onValueChange={([value]) => changeSetting({ checkTimeout: value })}
-            onValueCommit={([value]) => trigger({ checkTimeout: value })}
+            onValueChange={([value]) => onChange({ key: 'site', checkTimeout: value })}
+            onValueCommit={([value]) => onUpdate({ key: 'site', checkTimeout: value })}
           />
         </div>
       </CardContent>

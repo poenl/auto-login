@@ -12,7 +12,8 @@ export const PUT = async (req: Request) => {
       status: 400
     })
   }
-  const result = updateUserSettings(body.data)
+  const { key, ...bodyData } = body.data
+  const result = updateUserSettings(key, bodyData)
 
   return Response.json(result)
 }

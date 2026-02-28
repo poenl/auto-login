@@ -26,12 +26,15 @@ export const getUserSettings = () => config.get('settings')
 export type GetUserSettings = ReturnType<typeof getUserSettings>
 
 // 更新用户设置
-export const updateUserSettings = (setting: Partial<Settings>) => {
-  const oldSettings = config.get('settings')
+export const updateUserSettings = (
+  key: keyof Settings,
+  setting: Partial<Settings[keyof Settings]>
+) => {
+  const oldSettings = config.get(`settings.${key}`) as Settings[keyof Settings]
   const newSettings = {
     ...oldSettings,
     ...setting
   }
-  config.set('settings', newSettings)
+  config.set(`settings.${key}`, newSettings)
   return newSettings
 }
