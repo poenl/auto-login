@@ -2,6 +2,7 @@ import { config } from '../lib/conf'
 import argon2 from 'argon2'
 import fs from 'fs'
 import { User, Settings } from '../lib/conf'
+import { DeepPropType, Paths } from '../lib/types'
 
 // 更新用户信息
 export const updateUserInfo = async (
@@ -27,10 +28,10 @@ export type GetUserSettings = ReturnType<typeof getUserSettings>
 
 // 更新用户设置
 export const updateUserSettings = (
-  key: keyof Settings,
-  setting: Partial<Settings[keyof Settings]>
+  key: Paths<Settings>,
+  setting: Partial<DeepPropType<Settings, Paths<Settings>>>
 ) => {
-  const oldSettings = config.get(`settings.${key}`) as Settings[keyof Settings]
+  const oldSettings = config.get(`settings.${key}`) as DeepPropType<Settings, Paths<Settings>>
   const newSettings = {
     ...oldSettings,
     ...setting

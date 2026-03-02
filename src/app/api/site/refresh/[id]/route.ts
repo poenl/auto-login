@@ -1,4 +1,4 @@
-import { SiteState } from '@/src/db/schema'
+import { SiteState } from '@/src/lib/common'
 import { refreshPage } from '@/src/lib/puppeteer'
 import { getSiteInfo, updateSite } from '@/src/services/site.service'
 

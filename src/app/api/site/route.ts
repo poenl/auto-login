@@ -2,9 +2,10 @@ import { NextRequest } from 'next/server'
 import { addSiteDto } from '@/src/dto/site.dto'
 import { openPage } from '../../../lib/puppeteer'
 import db from '@/src/lib/db'
-import { sitesTable, SiteState } from '@/src/db/schema'
+import { sitesTable } from '@/src/db/schema'
 import { getQueryParams } from '@/src/lib/utils'
 import { getSites } from '@/src/services/site.service'
+import { SiteState } from '@/src/lib/common'
 
 export async function POST(request: NextRequest) {
   const body = addSiteDto.safeParse(await request.json())

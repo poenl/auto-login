@@ -12,24 +12,41 @@ import {
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/src/components/ui/field'
 import { Input } from '@/src/components/ui/input'
 import { Switch } from '@/src/components/ui/switch'
-import { settingsDto, SettingsDto } from '@/src/dto/user.dto'
+import { NotifyWhen, settingsDto, SettingsDto } from '@/src/dto/user.dto'
 import { GetUserSettings } from '@/src/services/user.service'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Bell, Send } from 'lucide-react'
-import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor
+} from '@/src/components/ui/combobox'
+
+const notify: NotifyWhen[] = [NotifyWhen['failed'], NotifyWhen['success']]
 
 export const NotificationSettings = ({
   settings,
   onUpdate
 }: {
-  settings?: GetUserSettings['telegram']
+  settings?: GetUserSettings['notify']['telegram']
   onUpdate: (arg: SettingsDto) => void
 }) => {
-  const { control, handleSubmit } = useForm({ resolver: zodResolver(settingsDto) })
+  const { control, handleSubmit } = useForm({
+    resolver: zodResolver(settingsDto),
+    defaultValues: {
+      key: 'notify.telegram'
+    }
+  })
 
-  const onSubmit: SubmitHandler<SettingsDto> = async (data) => {
-    onUpdate({ ...data, key: 'telegram' })
-  }
+  const anchor = useComboboxAnchor()
   return (
     <Card>
       <CardHeader>
@@ -54,9 +71,56 @@ export const NotificationSettings = ({
                 <DialogHeader>
                   <DialogTitle>Telegram 配置</DialogTitle>
                   <DialogDescription>请输入您的 Telegram 机器人令牌和用户 ID。</DialogDescription>
-                  <form onSubmit={handleSubmit(onSubmit)}>
+                  <form onSubmit={handleSubmit((data) => onUpdate(data))}>
                     <FieldGroup>
                       <FieldSet>
+                        <Controller
+                          control={control}
+                          name="notifyWhen"
+                          defaultValue={settings?.notifyWhen || []}
+                          render={({ field }) => (
+                            <Field orientation="horizontal">
+                              <FieldLabel className="w-30" htmlFor={field.name}>
+                                类型
+                              </FieldLabel>
+                              <Combobox
+                                multiple
+                                autoHighlight
+                                items={notify}
+                                id={field.name}
+                                value={field.value}
+                                onValueChange={(values) => {
+                                  field.onChange(values)
+                                }}
+                              >
+                                <ComboboxChips ref={anchor} className="w-full ">
+                                  <ComboboxValue>
+                                    {(values) => (
+                                      <>
+                                        {values.map((value: string) => (
+                                          <ComboboxChip key={value}>{value}</ComboboxChip>
+                                        ))}
+                                        <ComboboxChipsInput
+                                          placeholder={values.length ? '' : '在什么时候发送通知'}
+                                        />
+                                      </>
+                                    )}
+                                  </ComboboxValue>
+                                </ComboboxChips>
+                                <ComboboxContent anchor={anchor}>
+                                  <ComboboxEmpty>No items found.</ComboboxEmpty>
+                                  <ComboboxList className="pointer-events-auto">
+                                    {(item) => (
+                                      <ComboboxItem key={item} value={item}>
+                                        {item}
+                                      </ComboboxItem>
+                                    )}
+                                  </ComboboxList>
+                                </ComboboxContent>
+                              </Combobox>
+                            </Field>
+                          )}
+                        />
                         <Controller
                           control={control}
                           name="botToken"
@@ -96,7 +160,7 @@ export const NotificationSettings = ({
                       </FieldSet>
 
                       <FieldSet>
-                        <DialogClose asChild>
+                        <DialogClose asChild className="self-start w-auto">
                           <Field orientation="horizontal">
                             <Button type="submit">保存</Button>
                             <Button type="button" variant="outline">
@@ -112,7 +176,7 @@ export const NotificationSettings = ({
             </Dialog>
             <Switch
               checked={settings?.enable}
-              onCheckedChange={(checked) => onUpdate({ enable: checked, key: 'telegram' })}
+              onCheckedChange={(checked) => onUpdate({ enable: checked, key: 'notify.telegram' })}
             />
           </div>
         </div>

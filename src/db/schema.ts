@@ -1,20 +1,6 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { int, text, sqliteTable, blob, integer } from 'drizzle-orm/sqlite-core'
-
-export enum SiteState {
-  // 初始化
-  Initializing = 'initializing',
-  // 成功
-  Success = 'success',
-  // 失败
-  Failed = 'failed',
-  // 正在运行
-  Running = 'running',
-  // 检查中
-  Checking = 'checking',
-  // 超时
-  Timeout = 'timeout'
-}
+import { SiteState } from '../lib/common'
 
 export const sitesTable = sqliteTable('sites', {
   id: int().primaryKey({ autoIncrement: true }),

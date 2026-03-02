@@ -15,7 +15,7 @@ import { Spinner } from '@/src/components/ui/spinner'
 import { GetSites, GetSite } from '@/src/services/site.service'
 import Image from 'next/image'
 import { BadgeCheck, RotateCcw, CircleX, Trash2, Edit } from 'lucide-react'
-import { SiteState } from '@/src/db/schema'
+import { SiteState } from '@/src/lib/common'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
 import { useState, memo, useCallback } from 'react'
@@ -33,16 +33,7 @@ import {
   DialogTrigger
 } from '@/src/components/ui/dialog'
 import { RecordsTable } from './records-table'
-
-// 状态中文
-export const stateMap: Record<SiteState, string> = {
-  initializing: '初始化',
-  running: '运行中',
-  checking: '检查中',
-  success: '成功',
-  failed: '失败',
-  timeout: '超时'
-}
+import { stateMap } from '@/src/lib/common'
 
 export const stateIconMap: Record<SiteState, React.ReactNode> = {
   initializing: <Spinner />,

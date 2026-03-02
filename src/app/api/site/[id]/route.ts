@@ -1,11 +1,12 @@
 import db from '@/src/lib/db'
-import { SiteSchema, sitesTable, SiteState } from '@/src/db/schema'
+import { SiteSchema, sitesTable } from '@/src/db/schema'
 import { eq } from 'drizzle-orm'
 import { getSite, GetSiteInfo, getSiteInfo, updateSiteInfo } from '@/src/services/site.service'
 import { NextRequest } from 'next/server'
 import { addSiteDto } from '@/src/dto/site.dto'
 import { openPage } from '@/src/lib/puppeteer'
 import { clearCron, updateCron } from '@/src/lib/croner'
+import { SiteState } from '@/src/lib/common'
 
 export async function DELETE(_: unknown, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

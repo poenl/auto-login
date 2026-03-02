@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import puppeteer, { CookieData, Page } from 'puppeteer'
 import { sitesTable } from '@/src/db/schema'
-import { SiteState } from '@/src/db/schema'
+import { SiteState } from '@/src/lib/common'
 import { updateSite, GetSites, addRecord } from '../services/site.service'
 import { config } from './conf'
 
@@ -33,7 +33,10 @@ function normalizeCookies(cookies: any[]): CookieData[] {
 const settings = config.get('settings')
 const open = async (page: Page, site: { id: number; url: string }) => {
   try {
-    await page.goto(site.url, { timeout: settings.loginTimeout * 1000, waitUntil: 'networkidle2' })
+    await page.goto(site.url, {
+      timeout: settings.site.loginTimeout * 1000,
+      waitUntil: 'networkidle2'
+    })
 
     // 提前发生跳转
     if (page.url() !== site.url) {
@@ -56,7 +59,7 @@ const open = async (page: Page, site: { id: number; url: string }) => {
     try {
       await Promise.all([
         updateCheckSite(),
-        page.waitForNavigation({ timeout: settings.checkTimeout * 1000 })
+        page.waitForNavigation({ timeout: settings.site.checkTimeout * 1000 })
       ])
 
       const failedScreenshot = await page.screenshot()

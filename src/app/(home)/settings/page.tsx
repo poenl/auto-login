@@ -26,7 +26,16 @@ export default function Settings() {
     mutate(
       (prev) => {
         if (!prev) return
-        return { ...prev, [key]: { ...prev[key], ...patch } }
+        const newData = { ...prev } as unknown as Record<string, unknown>
+        const keys = key.split('.')
+        const last = keys.pop()!
+        const target = keys
+          .slice(0, -1)
+          .reduce<Record<string, unknown>>((acc: Record<string, unknown>, k: string) => {
+            return acc[k] as Record<string, unknown>
+          }, newData)
+        target[last] = { ...(target[last] as Record<string, unknown>), ...patch }
+        return newData as unknown as GetUserSettings
       },
       { revalidate: false }
     )
@@ -38,7 +47,7 @@ export default function Settings() {
         {/* 站点设置 */}
         <SiteSettings settings={settings?.site} onUpdate={trigger} onChange={handleChange} />
         {/* 通知设置 */}
-        <NotificationSettings settings={settings?.telegram} onUpdate={trigger} />
+        <NotificationSettings settings={settings?.notify.telegram} onUpdate={trigger} />
       </div>
     </div>
   )

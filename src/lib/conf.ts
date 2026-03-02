@@ -2,6 +2,7 @@ import Conf from 'conf'
 import argon2 from 'argon2'
 import path from 'node:path'
 import { generateSecret } from 'jose'
+import { NotifyWhen } from '../dto/user.dto'
 
 export interface User {
   name: string
@@ -13,10 +14,13 @@ export interface Settings {
     loginTimeout: number
     checkTimeout: number
   }
-  telegram: {
-    botToken?: string
-    chatId?: string
-    enable?: boolean
+  notify: {
+    telegram: {
+      botToken?: string
+      chatId?: string
+      notifyWhen?: NotifyWhen[] // 什么时候发送通知，为空则不发送
+      enable: boolean
+    }
   }
 }
 interface Config {

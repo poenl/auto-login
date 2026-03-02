@@ -10,11 +10,12 @@ import { getRecords } from '@/src/services/site.service'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
 import { Eye } from 'lucide-react'
-import { stateMap, stateStyleMap } from './site-card'
+import { stateStyleMap } from './site-card'
 import { ScrollArea } from '@/src/components/ui/scroll-area'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/src/components/ui/hover-card'
 import Image from 'next/image'
 import { Button } from '@/src/components/ui/button'
+import { stateMap } from '@/src/lib/common'
 
 export const RecordsTable = ({ siteId }: { siteId: number }) => {
   const { data } = useSWR(`/api/site/records/${siteId}`, (url) =>

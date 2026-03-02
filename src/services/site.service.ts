@@ -1,6 +1,8 @@
 import { eq, getTableColumns } from 'drizzle-orm'
-import { RecordSchema, recordsTable, SiteSchema, sitesTable, SiteState } from '../db/schema'
+import { RecordSchema, recordsTable, SiteSchema, sitesTable } from '../db/schema'
 import db from '../lib/db'
+import { sendMessage, shouldSendMessage } from '../lib/telegram-bot'
+import { SiteState, stateMap } from '@/src/lib/common'
 
 const siteFields = {
   id: sitesTable.id,
@@ -28,11 +30,21 @@ export const getSites = async (pagenum: number = 1, pagesize: number = 10) => {
 export type GetSites = Awaited<ReturnType<typeof getSites>>
 
 // 更新状态和截图
-export const updateSite = (id: number, siteData: { state: SiteState; screenshot?: Buffer }) => {
-  return db
+export const updateSite = async (
+  id: number,
+  siteData: { state: SiteState; screenshot?: Buffer }
+) => {
+  const [result] = await db
     .update(sitesTable)
     .set({ ...siteData, updatedAt: Date.now() })
     .where(eq(sitesTable.id, id))
+    .returning()
+
+  const state = siteData.state
+  if (state === SiteState.Failed || state === SiteState.Success || state === SiteState.Timeout) {
+    if (shouldSendMessage(state)) sendMessage(`${result.name}：${stateMap[state]}`)
+  }
+  return result
 }
 
 export const getSite = async (id: number) => {
