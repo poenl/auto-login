@@ -21,6 +21,7 @@ import { UserInfo } from '@/src/store/user'
 import { useState } from 'react'
 import z from 'zod'
 import { useLogout } from '@/src/hooks/use-logout'
+import { toast } from 'sonner'
 
 export default function Settings() {
   const { control, handleSubmit } = useForm({ resolver: zodResolver(updateUserDto) })
@@ -60,6 +61,7 @@ export default function Settings() {
         }
       }
     )
+    toast.success('更新成功')
     if (result) setUserInfo(result)
   }
 

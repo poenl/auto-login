@@ -1,6 +1,8 @@
 import { clsx, type ClassValue } from 'clsx'
 import { NextRequest } from 'next/server'
 import { twMerge } from 'tailwind-merge'
+import { fileURLToPath } from 'url'
+import path from 'path'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -15,4 +17,10 @@ export function getQueryParams<T extends Record<string, string | number>>(reques
   })
 
   return params
+}
+
+export function isMain(metaUrl: string) {
+  const __filename = fileURLToPath(metaUrl)
+  const entryFile = path.resolve(process.argv[1])
+  return entryFile === __filename
 }

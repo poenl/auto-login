@@ -1,16 +1,10 @@
 'use client'
 
-import { GalleryVerticalEnd } from 'lucide-react'
+import { GalleryVerticalEnd, LogIn } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import { Button } from '@/src/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel
-} from '@/src/components/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/src/components/ui/field'
 import { Input } from '@/src/components/ui/input'
 import { useForm, Controller, SubmitHandler, FieldValues } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -18,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signupDto } from '@/src/dto/auth.dto'
 import { useUserStore } from '@/src/store/user'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/src/components/ui/hover-card'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -46,6 +41,9 @@ export default function LoginPage() {
       toast.error(error.message)
     }
   }
+
+  const resetPassword = 'sh reset_password.sh'
+
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
@@ -53,13 +51,13 @@ export default function LoginPage() {
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEnd className="size-4" />
           </div>
-          Acme Inc.
+          Auto Login
         </a>
         <div className={cn('flex flex-col gap-6')}>
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-xl">Welcome back</CardTitle>
-              <CardDescription>Login with your Apple or Google account</CardDescription>
+              <CardTitle className="text-xl">登录账号</CardTitle>
+              <CardDescription>登录账号以访问所有功能</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit(onSubmit)}>
@@ -69,10 +67,10 @@ export default function LoginPage() {
                     control={control}
                     render={({ field, fieldState }) => (
                       <Field>
-                        <FieldLabel htmlFor="name">name</FieldLabel>
+                        <FieldLabel htmlFor="name">用户名</FieldLabel>
                         <Input
                           id={field.name}
-                          placeholder="m@example.com"
+                          placeholder="admin"
                           aria-invalid={fieldState.invalid}
                           {...field}
                         />
@@ -86,13 +84,33 @@ export default function LoginPage() {
                     render={({ field, fieldState }) => (
                       <Field>
                         <div className="flex items-center">
-                          <FieldLabel htmlFor="password">Password</FieldLabel>
-                          <a
-                            href="#"
-                            className="ml-auto text-sm underline-offset-4 hover:underline"
-                          >
-                            Forgot your password?
-                          </a>
+                          <FieldLabel htmlFor="password">密码</FieldLabel>
+                          {/* 忘记密码 */}
+                          <HoverCard openDelay={10} closeDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="link"
+                                className="ml-auto text-neutral-500"
+                              >
+                                忘记密码？
+                              </Button>
+                            </HoverCardTrigger>
+                            <HoverCardContent>
+                              进入容器内执行以下命令重置密码：
+                              <code className="bg-[#eee]">{resetPassword}</code>
+                              <Button
+                                type="button"
+                                className="w-full"
+                                variant="outline"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(resetPassword)
+                                }}
+                              >
+                                复制
+                              </Button>
+                            </HoverCardContent>
+                          </HoverCard>
                         </div>
                         <Input
                           id={field.name}
@@ -106,19 +124,15 @@ export default function LoginPage() {
                   />
 
                   <Field>
-                    <Button type="submit">Login</Button>
-                    <FieldDescription className="text-center">
-                      Don&apos;t have an account? <a href="#">Sign up</a>
-                    </FieldDescription>
+                    <Button type="submit">
+                      <LogIn />
+                      登录
+                    </Button>
                   </Field>
                 </FieldGroup>
               </form>
             </CardContent>
           </Card>
-          <FieldDescription className="px-6 text-center">
-            By clicking continue, you agree to our <a href="#">Terms of Service</a> and{' '}
-            <a href="#">Privacy Policy</a>.
-          </FieldDescription>
         </div>
       </div>
     </div>
