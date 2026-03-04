@@ -4,6 +4,13 @@ import { refreshPage } from './puppeteer'
 
 // 存储定时任务
 export const croners = new Map<number, Cron>()
+// 设置定时任务
+
+export const setCron = (site: { id: number; url: string; interval: string }) => {
+  const job = new Cron(site.interval, () => refreshPage(site))
+  croners.set(site.id, job)
+}
+
 // 清除定时任务
 export const clearCron = (id: number) => {
   const job = croners.get(id)
@@ -12,15 +19,15 @@ export const clearCron = (id: number) => {
   job.stop()
   croners.delete(id)
 }
+
 // 更新定时任务
-export const updateCron = async (site: { id: number; url: string; interval: string }) => {
+export const updateCron = (site: { id: number; url: string; interval: string }) => {
   clearCron(site.id)
-  const job = new Cron(site.interval, () => refreshPage(site))
-  croners.set(site.id, job)
+  setCron(site)
 }
 
 // 设置定时任务
-export const setCron = async () => {
+export const initCronAll = async () => {
   if (process.env.NODE_ENV === 'development') return
 
   const sites = await getSites()

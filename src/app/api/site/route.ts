@@ -6,6 +6,7 @@ import { sitesTable } from '@/src/db/schema'
 import { getQueryParams } from '@/src/lib/utils'
 import { getSites } from '@/src/services/site.service'
 import { SiteState } from '@/src/lib/common'
+import { setCron } from '@/src/lib/croner'
 
 export async function POST(request: NextRequest) {
   const body = addSiteDto.safeParse(await request.json())
@@ -19,6 +20,7 @@ export async function POST(request: NextRequest) {
     .returning()
 
   openPage(site)
+  setCron(site)
 
   return Response.json({ message: '添加成功', data: site })
 }
