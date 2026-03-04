@@ -69,24 +69,21 @@ export const SiteCard = memo(function SiteCard({
     []
   )
 
-  const { data: site, mutate } = useSWR(
-    `/api/site/${param.id}`,
-    (url) => fetch(url).then<GetSite>((res) => res.json()),
-    {
-      refreshInterval: (data) => {
-        if (!data) return 0
+  const { data, mutate } = useSWR<GetSite>(`/api/site/${param.id}`, {
+    refreshInterval: (data) => {
+      if (!data) return 0
 
-        if (!isPending(data.state)) {
-          updateLastRefreshTime()
-          updateNextRefreshTime()
-        }
+      if (!isPending(data.state)) {
+        updateLastRefreshTime()
+        updateNextRefreshTime()
+      }
 
-        return isPending(data.state) ? 1000 : 0
-      },
-      fallbackData: param,
-      revalidateOnMount: isPending(param.state)
-    }
-  )
+      return isPending(data.state) ? 1000 : 0
+    },
+    fallbackData: param,
+    revalidateOnMount: isPending(param.state)
+  })
+  const site = data ?? param
 
   const handleRefresh = async () => {
     await mutate({ ...site, state: SiteState.Initializing }, { revalidate: false })

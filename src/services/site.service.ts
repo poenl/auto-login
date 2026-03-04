@@ -96,3 +96,4 @@ export const getRecords = async (id: number) => {
     screenshot: `data:image/png;base64,${record.screenshot.toString('base64')}`
   }))
 }
+export type GetRecords = Awaited<ReturnType<typeof getRecords>>

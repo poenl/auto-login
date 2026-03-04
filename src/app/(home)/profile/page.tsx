@@ -31,17 +31,10 @@ export default function Settings() {
   const setUserInfo = useUserStore((state) => state.setUserInfo)
   const [avatar, setAvatar] = useState(userInfo.avatar)
 
-  const { data } = useSWR(
-    '/api/user',
-    async () => {
-      const res = await fetch('/api/user')
-      return res.json() as Promise<UserInfo>
-    },
-    {
-      fallbackData: userInfo,
-      revalidateOnFocus: false
-    }
-  )
+  const { data } = useSWR<UserInfo>('/api/user', {
+    fallbackData: userInfo
+  })
+  const user = data ?? userInfo
 
   const { trigger, isMutating } = useSWRMutation('/api/user', (url, { arg }: { arg: FormData }) =>
     fetch(url, {
@@ -57,10 +50,6 @@ export default function Settings() {
     if (fields.avatar) formData.append('avatar', fields.avatar)
 
     const result = await trigger(formData, {
-      optimisticData: {
-        name: fields.name || data.name,
-        avatar: avatar || data.avatar
-      },
       revalidate: false
     })
 
@@ -134,7 +123,7 @@ export default function Settings() {
                         type="name"
                         placeholder="输入您的用户名"
                         {...field}
-                        value={field.value || data.name}
+                        value={field.value || user.name}
                       />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>

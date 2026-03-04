@@ -35,20 +35,17 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
   })
 
   const siteId = use(searchParams).id
-  const { data } = useSWR(siteId ? `/api/site/info/${siteId}` : null, async (url) => {
-    const res = await fetch(url)
-    return res.json() as Promise<GetSiteInfo>
+  const { data: site } = useSWR<GetSiteInfo>(siteId ? `/api/site/info/${siteId}` : null, {
+    // 如果是编辑模式，则设置默认值
+    onSuccess(data) {
+      setValue('name', data.name)
+      setValue('url', data.url)
+      if (data.storage) setValue('storage', data.storage)
+      if (data.cookie) setValue('cookie', data.cookie)
+      setValue('interval', data.interval)
+    }
   })
-  // 如果是编辑模式，则设置默认值
-  useEffect(() => {
-    if (!data) return
-    setValue('name', data.name)
-    setValue('url', data.url)
-    if (data.storage) setValue('storage', data.storage)
-    if (data.cookie) setValue('cookie', data.cookie)
-    setValue('interval', data.interval)
-  }, [data, setValue])
-  // 提交
+
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     if (!siteId) {
       setLoading(true)
@@ -248,7 +245,7 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
           </form>
         </CardContent>
       </Card>
-      {siteId && !data && (
+      {siteId && !site && (
         <div className="w-full h-full absolute top-0 left-0 z-10 flex items-center justify-center bg-white/50">
           <Spinner className="size-8 text-neutral-500" />
         </div>

@@ -20,9 +20,9 @@ import { useRouter } from 'next/navigation'
 export default function Home() {
   const router = useRouter()
 
-  const { data: sites, mutate } = useSWR('/api/site', (url) =>
-    fetch(url).then<GetSites>((res) => res.json())
-  )
+  const { data: sites, mutate } = useSWR<GetSites>('/api/site', {
+    revalidateOnFocus: true
+  })
 
   // 删除站点
   const deleteSite = useCallback(

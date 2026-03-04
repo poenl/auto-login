@@ -8,9 +8,7 @@ import useSWRMutation from 'swr/mutation'
 import { SettingsDto } from '@/src/dto/user.dto'
 
 export default function Settings() {
-  const { data: settings, mutate } = useSWR('/api/user/settings', (url) =>
-    fetch(url).then((res) => res.json() as Promise<GetUserSettings>)
-  )
+  const { data: settings, mutate } = useSWR<GetUserSettings>('/api/user/settings')
 
   const { trigger } = useSWRMutation(
     '/api/user/settings',

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { ThemeProvider } from './theme-provider'
+import { ThemeProvider } from './config-provider'
 import { Noto_Sans_SC } from 'next/font/google'
 
 export const metadata: Metadata = {

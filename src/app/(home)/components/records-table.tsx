@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow
 } from '@/src/components/ui/table'
-import { getRecords } from '@/src/services/site.service'
+import { GetRecords } from '@/src/services/site.service'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
 import { Eye } from 'lucide-react'
@@ -19,9 +19,9 @@ import { stateMap } from '@/src/lib/common'
 import { Spinner } from '@/src/components/ui/spinner'
 
 export const RecordsTable = ({ siteId }: { siteId: number }) => {
-  const { data: records } = useSWR(`/api/site/records/${siteId}`, (url) =>
-    fetch(url).then((res) => res.json() as ReturnType<typeof getRecords>)
-  )
+  const { data: records } = useSWR<GetRecords>(`/api/site/records/${siteId}`, {
+    revalidateOnFocus: true
+  })
   return (
     <ScrollArea className="h-72 rounded-md ">
       {records ? (
