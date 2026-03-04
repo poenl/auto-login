@@ -18,7 +18,7 @@ import { BadgeCheck, RotateCcw, CircleX, Trash2, Edit } from 'lucide-react'
 import { SiteState } from '@/src/lib/common'
 import useSWR from 'swr'
 import { date } from '@/src/lib/dayjs'
-import { useState, memo, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/components/ui/tooltip'
 import { Cron } from 'croner'
@@ -60,7 +60,6 @@ export const SiteCard = memo(function SiteCard({
   deleteSite: (id: number) => void
 }) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
 
   const isPending = useCallback(
     (state: SiteState) =>
@@ -90,10 +89,9 @@ export const SiteCard = memo(function SiteCard({
   )
 
   const handleRefresh = async () => {
-    setIsLoading(true)
+    await mutate({ ...site, state: SiteState.Initializing }, { revalidate: false })
     await fetch(`/api/site/refresh/${param.id}`)
-    setIsLoading(false)
-    mutate()
+    await mutate()
   }
   // 修改
   const handleEdit = () => {
@@ -163,11 +161,11 @@ export const SiteCard = memo(function SiteCard({
             <Button
               variant="ghost"
               size="sm"
-              disabled={isPending(site.state) || isLoading}
+              disabled={isPending(site.state)}
               onClick={handleRefresh}
             >
               {lastRefreshTime}
-              {isPending(site.state) || isLoading ? <Spinner /> : <RotateCcw />}
+              {isPending(site.state) ? <Spinner /> : <RotateCcw />}
             </Button>
           </TooltipTrigger>
           <TooltipContent>

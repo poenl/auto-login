@@ -99,7 +99,7 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
     }
   }
   return (
-    <div className="p-4 bg-secondary h-full flex justify-center items-center">
+    <div className="p-4 bg-secondary h-full flex justify-center items-center relative">
       <Card className="max-w-200 flex-1">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">{siteId ? '修改站点' : '添加站点'}</CardTitle>
@@ -248,6 +248,11 @@ export default function Site({ searchParams }: { searchParams: Promise<{ id: str
           </form>
         </CardContent>
       </Card>
+      {siteId && !data && (
+        <div className="w-full h-full absolute top-0 left-0 z-10 flex items-center justify-center bg-white/50">
+          <Spinner className="size-8 text-neutral-500" />
+        </div>
+      )}
     </div>
   )
 }

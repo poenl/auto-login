@@ -22,6 +22,8 @@ import { useState } from 'react'
 import z from 'zod'
 import { useLogout } from '@/src/hooks/use-logout'
 import { toast } from 'sonner'
+import { Spinner } from '@/src/components/ui/spinner'
+import useSWRMutation from 'swr/mutation'
 
 export default function Settings() {
   const { control, handleSubmit } = useForm({ resolver: zodResolver(updateUserDto) })
@@ -29,7 +31,7 @@ export default function Settings() {
   const setUserInfo = useUserStore((state) => state.setUserInfo)
   const [avatar, setAvatar] = useState(userInfo.avatar)
 
-  const { data, mutate } = useSWR(
+  const { data } = useSWR(
     '/api/user',
     async () => {
       const res = await fetch('/api/user')
@@ -37,9 +39,15 @@ export default function Settings() {
     },
     {
       fallbackData: userInfo,
-      revalidateOnMount: false,
       revalidateOnFocus: false
     }
+  )
+
+  const { trigger, isMutating } = useSWRMutation('/api/user', (url, { arg }: { arg: FormData }) =>
+    fetch(url, {
+      method: 'PUT',
+      body: arg
+    }).then((res) => res.json())
   )
 
   const onSubmit: SubmitHandler<z.infer<typeof updateUserDto>> = async (fields) => {
@@ -48,19 +56,14 @@ export default function Settings() {
     if (fields.password) formData.append('password', fields.password)
     if (fields.avatar) formData.append('avatar', fields.avatar)
 
-    const result = await mutate(
-      () =>
-        fetch('/api/user', {
-          method: 'PUT',
-          body: formData
-        }).then((res) => res.json()),
-      {
-        optimisticData: {
-          name: fields.name || data.name,
-          avatar: avatar || data.avatar
-        }
-      }
-    )
+    const result = await trigger(formData, {
+      optimisticData: {
+        name: fields.name || data.name,
+        avatar: avatar || data.avatar
+      },
+      revalidate: false
+    })
+
     toast.success('更新成功')
     if (result) setUserInfo(result)
   }
@@ -123,11 +126,16 @@ export default function Settings() {
                 <Controller
                   control={control}
                   name="name"
-                  defaultValue={data.name}
                   render={({ field, fieldState }) => (
                     <Field>
                       <FieldLabel>用户名</FieldLabel>
-                      <Input id="name" type="name" placeholder="输入您的用户名" {...field} />
+                      <Input
+                        id="name"
+                        type="name"
+                        placeholder="输入您的用户名"
+                        {...field}
+                        value={field.value || data.name}
+                      />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
@@ -146,7 +154,7 @@ export default function Settings() {
                   )}
                 />
                 <Field orientation="horizontal">
-                  <Button>保存更改</Button>
+                  <Button disabled={isMutating}>{isMutating && <Spinner />}保存更改</Button>
                 </Field>
               </FieldSet>
             </form>
