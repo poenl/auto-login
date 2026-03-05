@@ -102,7 +102,7 @@ const open = async (page: Page, site: { id: number; url: string }) => {
 
 const createBrowser = async () => {
   return puppeteer.launch({
-    headless: false,
+    headless: process.env.NODE_ENV !== 'development',
     userDataDir: './config/user_data'
   })
 }

@@ -7,5 +7,6 @@ RUN pnpm i
 RUN pnpm puppeteer browsers install chrome
 COPY . .
 RUN pnpm build
+RUN pnpm db:push
 EXPOSE 3000
 CMD ["pnpm", "start"]

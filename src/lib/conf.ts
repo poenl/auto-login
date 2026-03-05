@@ -95,8 +95,10 @@ export const initSettings = () => {
       loginTimeout: 10,
       checkTimeout: 10
     },
-    telegram: {
-      enable: false
+    notify: {
+      telegram: {
+        enable: false
+      }
     }
   }
   config.set('settings', defaultSettings)

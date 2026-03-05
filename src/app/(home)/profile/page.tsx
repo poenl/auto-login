@@ -68,7 +68,7 @@ export default function Settings() {
               <User className="h-5 w-5 text-primary" />
               <CardTitle>个人资料</CardTitle>
             </div>
-            <CardDescription>更新您的个人信息和头像</CardDescription>
+            <CardDescription>更新您的个人信息和头像，留空的部分不更新</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)}>

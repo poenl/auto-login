@@ -36,5 +36,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/(api/(?!auth).*)', '/', '/site']
+  matcher: ['/(api/(?!auth).*)', '/', '/site', '/profile', '/settings']
 }
