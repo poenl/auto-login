@@ -29,8 +29,9 @@ import {
   ComboboxValue,
   useComboboxAnchor
 } from '@/src/components/ui/combobox'
+import { SiteState, stateMap } from '@/src/lib/common'
 
-const notify: NotifyWhen[] = [NotifyWhen['failed'], NotifyWhen['success']]
+const notify: NotifyWhen[] = [NotifyWhen.failed, NotifyWhen.success]
 
 export const NotificationSettings = ({
   settings,
@@ -95,10 +96,10 @@ export const NotificationSettings = ({
                               >
                                 <ComboboxChips ref={anchor} className="w-full ">
                                   <ComboboxValue>
-                                    {(values) => (
+                                    {(values: SiteState[]) => (
                                       <>
-                                        {values.map((value: string) => (
-                                          <ComboboxChip key={value}>{value}</ComboboxChip>
+                                        {values.map((value) => (
+                                          <ComboboxChip key={value}>{stateMap[value]}</ComboboxChip>
                                         ))}
                                         <ComboboxChipsInput
                                           placeholder={values.length ? '' : '在什么时候发送通知'}
@@ -110,9 +111,9 @@ export const NotificationSettings = ({
                                 <ComboboxContent anchor={anchor}>
                                   <ComboboxEmpty>No items found.</ComboboxEmpty>
                                   <ComboboxList className="pointer-events-auto">
-                                    {(item) => (
+                                    {(item: SiteState) => (
                                       <ComboboxItem key={item} value={item}>
-                                        {item}
+                                        {stateMap[item]}
                                       </ComboboxItem>
                                     )}
                                   </ComboboxList>

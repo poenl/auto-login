@@ -1,8 +1,9 @@
 import { config } from '../lib/conf'
 import argon2 from 'argon2'
-import fs from 'fs'
+import fs from 'node:fs/promises'
 import { User, Settings } from '../lib/conf'
 import { DeepPropType, Paths } from '../lib/types'
+import path from 'node:path'
 
 // 更新用户信息
 export const updateUserInfo = async (
@@ -10,8 +11,13 @@ export const updateUserInfo = async (
 ) => {
   if (userInfo.name) config.set('user.name', userInfo.name)
   if (userInfo.avatar) {
-    fs.writeFileSync('public/avatar.png', userInfo.avatar)
-    config.set('user.avatar', '/avatar.png')
+    try {
+      await fs.writeFile(path.join(process.cwd(), 'config/assets/avatar.png'), userInfo.avatar)
+    } catch {
+      await fs.mkdir(path.join(process.cwd(), 'config/assets'))
+      await fs.writeFile(path.join(process.cwd(), 'config/assets/avatar.png'), userInfo.avatar)
+    }
+    config.set('user.avatar', '/assets/avatar.png')
   }
   if (userInfo.password) {
     const hash = await argon2.hash(userInfo.password)
@@ -20,6 +26,8 @@ export const updateUserInfo = async (
 
   return config.get('user')!
 }
+// 获取用户信息
+export const getUserInfo = () => config.get('user')!
 
 // 获取用户设置
 export const getUserSettings = () => config.get('settings')

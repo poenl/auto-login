@@ -123,7 +123,7 @@ export default function Settings() {
                         type="name"
                         placeholder="输入您的用户名"
                         {...field}
-                        value={field.value || user.name}
+                        value={field.value ?? user.name}
                       />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>

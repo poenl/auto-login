@@ -1,12 +1,10 @@
-import { updateUserInfo } from '@/src/services/user.service'
+import { getUserInfo, updateUserInfo } from '@/src/services/user.service'
 import { updateUserDto } from '@/src/dto/auth.dto'
 import { NextRequest } from 'next/server'
-import { config } from '@/src/lib/conf'
 
 export const GET = async () => {
-  const user = config.get('user')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...rest } = user!
+  const { password, ...rest } = getUserInfo()
   return Response.json(rest)
 }
 export const PUT = async (req: NextRequest) => {
