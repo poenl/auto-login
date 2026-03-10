@@ -1,5 +1,6 @@
 import next from 'next'
 import { createServer } from 'http'
+import chalk from 'chalk'
 
 import './src/lib/init-config'
 
@@ -11,5 +12,5 @@ app.prepare().then(async () => {
     handle(req, res)
   }).listen(3000)
 
-  console.log('> Ready on http://localhost:3000')
+  console.log(chalk.green('> Ready on http://localhost:3000'))
 })

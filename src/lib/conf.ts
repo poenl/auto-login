@@ -5,6 +5,7 @@ import { generateSecret } from 'jose'
 import { NotifyWhen } from '../dto/user.dto'
 import crypto from 'node:crypto'
 import { isMain } from './utils'
+import chalk from 'chalk'
 
 export interface User {
   name: string
@@ -62,7 +63,7 @@ export const createAdmin = async () => {
     password
   }
   config.set('user', user)
-  console.log(`管理员账号已创建，用户名：admin，密码：${securePassword}`)
+  console.log(chalk.bgGreen(`管理员账号已创建，用户名：admin，密码：${securePassword}`))
 }
 // 重置密码
 export const resetPassword = async () => {
@@ -72,7 +73,7 @@ export const resetPassword = async () => {
   const hashedPassword = await argon2.hash(securePassword)
   user.password = hashedPassword
   config.set('user', user)
-  console.log(`密码已重置，新密码为：${securePassword}`)
+  console.log(chalk.bgGreen(`密码已重置，新密码为：${securePassword}`))
 }
 if (isMain(import.meta.url)) resetPassword()
 

@@ -1,4 +1,4 @@
-import { eq, getTableColumns } from 'drizzle-orm'
+import { eq, getTableColumns, desc } from 'drizzle-orm'
 import { RecordSchema, recordsTable, SiteSchema, sitesTable } from '../db/schema'
 import db from '../lib/db'
 import { sendMessage, shouldSendMessage } from '../lib/telegram-bot'
@@ -90,7 +90,11 @@ export const addRecord = async (siteData: Omit<RecordSchema, 'id' | 'createdAt'>
 }
 
 export const getRecords = async (id: number) => {
-  const records = await db.select().from(recordsTable).where(eq(recordsTable.siteId, id))
+  const records = await db
+    .select()
+    .from(recordsTable)
+    .where(eq(recordsTable.siteId, id))
+    .orderBy(desc(recordsTable.id))
   return records.map((record) => ({
     ...record,
     screenshot: `data:image/png;base64,${record.screenshot.toString('base64')}`
