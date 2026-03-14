@@ -62,7 +62,7 @@ export const getSite = async (id: number) => {
     .where(eq(sitesTable.id, id))
   const result = {
     ...site,
-    screenshot: `data:image/png;base64,${site.screenshot!.toString('base64')}`
+    screenshot: `data:image/png;base64,${site.screenshot?.toString('base64')}`
   }
   return result
 }

@@ -103,7 +103,8 @@ const open = async (page: Page, site: { id: number; url: string }) => {
 const createBrowser = async () => {
   return puppeteer.launch({
     headless: process.env.NODE_ENV !== 'development',
-    userDataDir: './config/user_data'
+    userDataDir: './config/user_data',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
 }
 // 打开页面
